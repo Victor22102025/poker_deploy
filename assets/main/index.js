@@ -567,14 +567,6 @@ System.register("chunks:///_virtual/AudioManager.ts", ['./rollupPluginModLoBabel
 
         var _proto = AudioManager.prototype;
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.AudioManager, this);
-        };
-
-        _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(Define.Service.AudioManager);
-        };
-
         _proto.init = function init() {
           this._poolManager = ServiceLocator.get(Define.Service.PoolManager);
           this._sfxMuted = !PlayerPrefs.getBool("soundOn", true);
@@ -1839,6 +1831,7 @@ System.register("chunks:///_virtual/BaseUI.ts", ['./rollupPluginModLoBabelHelper
           this.audioManager = ServiceLocator.get(Define.Service.AudioManager);
           this.poolManager = ServiceLocator.get(Define.Service.PoolManager);
           this.eventBus = ServiceLocator.get(Define.Service.EventBus);
+          this.panel.active = false;
         };
 
         _proto.resetState = function resetState() {} //#region node Methods
@@ -2885,10 +2878,10 @@ System.register("chunks:///_virtual/CardAssetLoader.ts", ['./rollupPluginModLoBa
   };
 });
 
-System.register("chunks:///_virtual/CardControl.ts", ['cc', './UserInforUI.ts', './ServiceLocator.ts', './Define.ts'], function (exports) {
+System.register("chunks:///_virtual/CardControl.ts", ['cc', './UserInforUI.ts', './Define.ts', './ServiceLocator.ts'], function (exports) {
   'use strict';
 
-  var cclegacy, _decorator, UserInforUI, ServiceLocator, Define;
+  var cclegacy, _decorator, UserInforUI, Define, ServiceLocator;
 
   return {
     setters: [function (module) {
@@ -2897,9 +2890,9 @@ System.register("chunks:///_virtual/CardControl.ts", ['cc', './UserInforUI.ts', 
     }, function (module) {
       UserInforUI = module.UserInforUI;
     }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
       Define = module.Define;
+    }, function (module) {
+      ServiceLocator = module.ServiceLocator;
     }],
     execute: function () {
       var _dec, _class;
@@ -2936,10 +2929,10 @@ System.register("chunks:///_virtual/CardControl.ts", ['cc', './UserInforUI.ts', 
   };
 });
 
-System.register("chunks:///_virtual/CardController.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ServiceLocator.ts', './Define.ts'], function (exports) {
+System.register("chunks:///_virtual/CardController.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './Define.ts', './ServiceLocator.ts', './EUIGame.ts'], function (exports) {
   'use strict';
 
-  var _inheritsLoose, _createClass, cclegacy, _decorator, Component, ServiceLocator, Define;
+  var _inheritsLoose, _createClass, cclegacy, _decorator, Component, Define, ServiceLocator, EUIGame;
 
   return {
     setters: [function (module) {
@@ -2950,9 +2943,11 @@ System.register("chunks:///_virtual/CardController.ts", ['./rollupPluginModLoBab
       _decorator = module._decorator;
       Component = module.Component;
     }, function (module) {
+      Define = module.Define;
+    }, function (module) {
       ServiceLocator = module.ServiceLocator;
     }, function (module) {
-      Define = module.Define;
+      EUIGame = module.EUIGame;
     }],
     execute: function () {
       var _dec, _class;
@@ -2976,25 +2971,22 @@ System.register("chunks:///_virtual/CardController.ts", ['./rollupPluginModLoBab
           _this.sessionManager = null;
           _this.eventBus = null;
           _this.userProfile = null;
+          _this.uiManager = null;
           return _this;
         }
 
         var _proto = CardController.prototype;
 
-        _proto.onLoad = function onLoad() {
-          this.subcribeController();
-        };
-
-        _proto.onDestroy = function onDestroy() {
-          this.unsubcribeController();
-        };
-
-        _proto.init = function init(minigameUI) {
+        _proto.init = function init() {
           this.sessionManager = ServiceLocator.get(Define.Service.SessionManager);
           this.eventBus = ServiceLocator.get(Define.Service.EventBus);
           this.userProfile = ServiceLocator.get(Define.Service.UserProfile);
-          this.minigameUI = minigameUI;
+          this.uiManager = ServiceLocator.get(Define.Service.UIManager);
           this.setEvents();
+        };
+
+        _proto.onLoad = function onLoad() {
+          this.minigameUI = this.uiManager.getUI(EUIGame.MinigameUIManager);
         };
 
         _createClass(CardController, [{
@@ -3622,10 +3614,10 @@ System.register("chunks:///_virtual/CardView.ts", ['./rollupPluginModLoBabelHelp
   };
 });
 
-System.register("chunks:///_virtual/CheckFoldBehaviour.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseBehaviour.ts', './UserManager.ts', './BetManager.ts', './PhaseManager.ts', './ServiceLocator.ts'], function (exports) {
+System.register("chunks:///_virtual/CheckFoldBehaviour.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseBehaviour.ts', './UserManager.ts', './BetManager.ts', './PhaseManager.ts'], function (exports) {
   'use strict';
 
-  var _inheritsLoose, _createForOfIteratorHelperLoose, cclegacy, _decorator, BaseBehaviour, UserManager, BetManager, PhaseManager, ServiceLocator;
+  var _inheritsLoose, _createForOfIteratorHelperLoose, cclegacy, _decorator, BaseBehaviour, UserManager, BetManager, PhaseManager;
 
   return {
     setters: [function (module) {
@@ -3642,8 +3634,6 @@ System.register("chunks:///_virtual/CheckFoldBehaviour.ts", ['./rollupPluginModL
       BetManager = module.BetManager;
     }, function (module) {
       PhaseManager = module.PhaseManager;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
     }],
     execute: function () {
       var _dec, _class;
@@ -3668,8 +3658,8 @@ System.register("chunks:///_virtual/CheckFoldBehaviour.ts", ['./rollupPluginModL
           if (userManager.countInHandUser() === 1) {
             var remains = this.getUserRemain(userManager); // only 1 call
 
-            var winner = remains[0];
-            ServiceLocator.register('Bluff', winner);
+            var winner = remains[0]; //ServiceLocator.register('Bluff', winner);
+
             winner.TotalEarn += betManager.totalBet;
             betManager.setWinners(remains);
             var phaseManager = this.gameplayManager.getMiniManager(PhaseManager);
@@ -4030,10 +4020,10 @@ System.register("chunks:///_virtual/CheckHandRank.ts", ['./rollupPluginModLoBabe
   };
 });
 
-System.register("chunks:///_virtual/CheckHandRankBehaviour.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseBehaviour.ts', './TableManager.ts', './CheckHandRank.ts', './BetManager.ts', './UserManager.ts', './PokerTableUI.ts', './ServiceLocator.ts', './UserInforUI.ts', './HandRank.ts'], function (exports) {
+System.register("chunks:///_virtual/CheckHandRankBehaviour.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseBehaviour.ts', './TableManager.ts', './CheckHandRank.ts', './BetManager.ts', './UserManager.ts', './PokerTableUI.ts', './UserInforUI.ts', './HandRank.ts'], function (exports) {
   'use strict';
 
-  var _inheritsLoose, _createForOfIteratorHelperLoose, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, BaseBehaviour, TableManager, CheckHandRank, BetManager, UserManager, PokerTableUI, ServiceLocator, UserInforUI, HandRank;
+  var _inheritsLoose, _createForOfIteratorHelperLoose, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, BaseBehaviour, TableManager, CheckHandRank, BetManager, UserManager, PokerTableUI, UserInforUI, HandRank;
 
   return {
     setters: [function (module) {
@@ -4056,8 +4046,6 @@ System.register("chunks:///_virtual/CheckHandRankBehaviour.ts", ['./rollupPlugin
       UserManager = module.UserManager;
     }, function (module) {
       PokerTableUI = module.PokerTableUI;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
     }, function (module) {
       UserInforUI = module.UserInforUI;
     }, function (module) {
@@ -4124,8 +4112,8 @@ System.register("chunks:///_virtual/CheckHandRankBehaviour.ts", ['./rollupPlugin
                     // into one big pot so the UI only plays one animation.
                     // =================================================================
 
-                    mergedPotsMap = new Map();
-                    ServiceLocator.register('winnerResult', this._userHandMap);
+                    mergedPotsMap = new Map(); //ServiceLocator.register('winnerResult', this._userHandMap);
+
                     rawPots.forEach(function (pot) {
                       if (!pot.Winners || pot.Winners.size === 0) return; // Generate unique key for this winner group (e.g. "0|2")
 
@@ -4161,7 +4149,7 @@ System.register("chunks:///_virtual/CheckHandRankBehaviour.ts", ['./rollupPlugin
 
                     this.endBehaviour();
 
-                  case 16:
+                  case 15:
                   case "end":
                     return _context.stop();
                 }
@@ -5081,10 +5069,10 @@ System.register("chunks:///_virtual/DealCardOnTableBehaviour.ts", ['./rollupPlug
   };
 });
 
-System.register("chunks:///_virtual/DealCardToUserBehaviour.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseBehaviour.ts', './DeckManager.ts', './UserManager.ts', './Card.ts', './PokerTableUI.ts', './ServiceLocator.ts', './AsyncUtils.ts', './UserInforUI.ts', './CardLibrary.ts'], function (exports) {
+System.register("chunks:///_virtual/DealCardToUserBehaviour.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseBehaviour.ts', './DeckManager.ts', './UserManager.ts', './Card.ts', './PokerTableUI.ts', './AsyncUtils.ts', './UserInforUI.ts', './CardLibrary.ts'], function (exports) {
   'use strict';
 
-  var _inheritsLoose, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, BaseBehaviour, DeckManager, UserManager, Card, PokerTableUI, ServiceLocator, AsyncUtils, UserInforUI, CardLibrary;
+  var _inheritsLoose, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, BaseBehaviour, DeckManager, UserManager, Card, PokerTableUI, AsyncUtils, UserInforUI, CardLibrary;
 
   return {
     setters: [function (module) {
@@ -5104,8 +5092,6 @@ System.register("chunks:///_virtual/DealCardToUserBehaviour.ts", ['./rollupPlugi
       Card = module.Card;
     }, function (module) {
       PokerTableUI = module.PokerTableUI;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
     }, function (module) {
       AsyncUtils = module.AsyncUtils;
     }, function (module) {
@@ -5183,9 +5169,8 @@ System.register("chunks:///_virtual/DealCardToUserBehaviour.ts", ['./rollupPlugi
                     turnHandler = this._userManager.turnHandler;
 
                     this._userCardMap.clear(); //load data
+                    //ServiceLocator.register("CardData", this._userCardMap);
 
-
-                    ServiceLocator.register("CardData", this._userCardMap);
 
                     for (i = 0; i < this._userManager.activeUsers.length; i++) {
                       user = turnHandler.getUserFromQueue();
@@ -5203,17 +5188,17 @@ System.register("chunks:///_virtual/DealCardToUserBehaviour.ts", ['./rollupPlugi
                     userCardArray = Array.from(this._userCardMap.entries());
                     _i = 0;
 
-                  case 12:
+                  case 11:
                     if (!(_i < 2)) {
-                      _context2.next = 25;
+                      _context2.next = 24;
                       break;
                     }
 
                     k = 0;
 
-                  case 14:
+                  case 13:
                     if (!(k < this._userManager.activeUsers.length)) {
-                      _context2.next = 22;
+                      _context2.next = 21;
                       break;
                     }
 
@@ -5228,28 +5213,28 @@ System.register("chunks:///_virtual/DealCardToUserBehaviour.ts", ['./rollupPlugi
                     //     });
                     // }
 
-                    _context2.next = 19;
+                    _context2.next = 18;
                     return AsyncUtils.waitForSeconds(timeWaitBetweenCards);
 
-                  case 19:
+                  case 18:
                     k++;
-                    _context2.next = 14;
+                    _context2.next = 13;
                     break;
 
-                  case 22:
+                  case 21:
                     _i++;
-                    _context2.next = 12;
+                    _context2.next = 11;
                     break;
 
-                  case 25:
+                  case 24:
                     this.onSortCardUser();
-                    _context2.next = 28;
+                    _context2.next = 27;
                     return AsyncUtils.waitForSeconds(this.config.TimeToDealCard);
 
-                  case 28:
+                  case 27:
                     this.onShowUserCard();
 
-                  case 29:
+                  case 28:
                   case "end":
                     return _context2.stop();
                 }
@@ -5395,7 +5380,7 @@ System.register("chunks:///_virtual/Define.ts", ['cc'], function (exports) {
       var Define = exports('Define', function Define() {});
       Define.SceneName = {
         Splash: 'Splash',
-        Login: 'Login',
+        Lobby: 'Lobby',
         Hall: 'Hall'
       };
       Define.Service = {
@@ -5415,7 +5400,8 @@ System.register("chunks:///_virtual/Define.ts", ['cc'], function (exports) {
           Global: 'GlobalAdapter'
         },
         GameController: 'GameController',
-        ImageCache: 'ImageCache',
+        LoginController: 'LoginController',
+        ImageCache: 'ImageCacheManager',
         NetworkController: 'NetworkController'
       };
       Define.EventBusKey = {
@@ -5434,10 +5420,10 @@ System.register("chunks:///_virtual/Define.ts", ['cc'], function (exports) {
           Global: {
             Login: 'login',
             Logout: 'logout',
-            SearchRoom: 'search_room',
-            CreateRoom: 'create_room',
-            JoinRoom: 'joinRoom',
-            LeaveRoom: 'leaveroom',
+            SearchTable: 'search_room',
+            CreateTable: 'create_room',
+            JoinTable: 'joinRoom',
+            LeaveTable: 'leaveroom',
             UpdateBalance: 'updateBalance',
             Ping: 'Ping',
             UserInfor: 'user_infor',
@@ -5476,24 +5462,23 @@ System.register("chunks:///_virtual/DefinePoker.ts", ['cc'], function (exports) 
           Poker: 'PokerAdapter'
         },
         PokerController: 'PokerController',
-        PokerLobbyController: 'PokerLobbyController',
-        PokerModel: 'PokerModel'
+        PokerLobbyController: 'PokerLobbyController'
       };
       DefinePoker.EventBusKey = {
         NetworkResponse: {
           PokerLobby: {
-            GetRooms: 'get_room_types'
+            GetTables: 'get_room_types'
           },
           Poker: {
-            UserExitRoom: 'user_exit_room',
+            UserExitTable: 'user_exit_room',
             PlaceBlind: 'place_bind',
             DealCardToUser: 'deal_hole_cards',
             DealFlop: 'deal_flop',
             DealTurn: 'deal_turn',
             DealRiver: 'deal_river',
             ActionResponse: 'action_response',
-            UserEnterRoom: 'user_enter_room',
-            RoomData: 'room_data',
+            UserEnterTable: 'user_enter_room',
+            TableData: 'room_data',
             RevealCard: 'reveal_card',
             RevealAllCard: 'reveal_all_card',
             ChangeTurn: 'player_turn',
@@ -6325,6 +6310,7 @@ System.register("chunks:///_virtual/EUIGame.ts", ['cc'], function (exports) {
         EUIGame["Popup_UserProfile"] = "Popup_UserProfile";
         EUIGame["Popup_Wheel"] = "Popup_Wheel";
         EUIGame["Popup_JoinRoom"] = "Popup_JoinRoom";
+        EUIGame["MinigameUIManager"] = "MinigameUIManager";
       })(EUIGame || (EUIGame = exports('EUIGame', {})));
 
       cclegacy._RF.pop();
@@ -6362,10 +6348,10 @@ System.register("chunks:///_virtual/EUserOptions.ts", ['cc'], function (exports)
   };
 });
 
-System.register("chunks:///_virtual/EventBus.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ServiceLocator.ts', './Define.ts'], function () {
+System.register("chunks:///_virtual/EventBus.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc'], function () {
   'use strict';
 
-  var _inheritsLoose, cclegacy, _decorator, EventTarget, Component, ServiceLocator, Define;
+  var _inheritsLoose, cclegacy, _decorator, EventTarget, Component;
 
   return {
     setters: [function (module) {
@@ -6375,10 +6361,6 @@ System.register("chunks:///_virtual/EventBus.ts", ['./rollupPluginModLoBabelHelp
       _decorator = module._decorator;
       EventTarget = module.EventTarget;
       Component = module.Component;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
-      Define = module.Define;
     }],
     execute: function () {
       var _dec, _class;
@@ -6404,13 +6386,7 @@ System.register("chunks:///_virtual/EventBus.ts", ['./rollupPluginModLoBabelHelp
 
         var _proto = EventBus.prototype;
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.EventBus, this);
-        };
-
-        _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(Define.Service.EventBus);
-        };
+        _proto.init = function init() {};
 
         _proto.on = function on(type, callback, target) {
           this._eventBus.on(type, callback, target);
@@ -6810,10 +6786,102 @@ System.register("chunks:///_virtual/FloatingObject.ts", ['./rollupPluginModLoBab
   };
 });
 
-System.register("chunks:///_virtual/GameConfig.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './Define.ts', './ServiceLocator.ts'], function (exports) {
+System.register("chunks:///_virtual/FloatingText.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './FloatingObject.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _initializerDefineProperty, _inheritsLoose, _assertThisInitialized, cclegacy, _decorator, CCInteger, Component, Define, ServiceLocator;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, Label, LabelOutline, Color, FloatingObject;
+
+  return {
+    setters: [function (module) {
+      _applyDecoratedDescriptor = module.applyDecoratedDescriptor;
+      _inheritsLoose = module.inheritsLoose;
+      _initializerDefineProperty = module.initializerDefineProperty;
+      _assertThisInitialized = module.assertThisInitialized;
+    }, function (module) {
+      cclegacy = module.cclegacy;
+      _decorator = module._decorator;
+      Label = module.Label;
+      LabelOutline = module.LabelOutline;
+      Color = module.Color;
+    }, function (module) {
+      FloatingObject = module.FloatingObject;
+    }],
+    execute: function () {
+      var _dec, _dec2, _dec3, _class, _class2, _descriptor, _descriptor2;
+
+      cclegacy._RF.push({}, "b61e0D4wa5B9ZPGrFSZ1P6+", "FloatingText", undefined);
+
+      var ccclass = _decorator.ccclass,
+          property = _decorator.property;
+      var FloatingText = exports('FloatingText', (_dec = ccclass('FloatingText'), _dec2 = property({
+        type: Label,
+        visible: true
+      }), _dec3 = property({
+        type: LabelOutline,
+        visible: true
+      }), _dec(_class = (_class2 = /*#__PURE__*/function (_FloatingObject) {
+        _inheritsLoose(FloatingText, _FloatingObject);
+
+        function FloatingText() {
+          var _this;
+
+          for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+          }
+
+          _this = _FloatingObject.call.apply(_FloatingObject, [this].concat(args)) || this;
+
+          _initializerDefineProperty(_this, "_lbText", _descriptor, _assertThisInitialized(_this));
+
+          _initializerDefineProperty(_this, "_lbOutline", _descriptor2, _assertThisInitialized(_this));
+
+          return _this;
+        }
+
+        var _proto = FloatingText.prototype;
+
+        _proto.setText = function setText(text) {
+          this._lbText.string = text;
+          return this;
+        };
+
+        _proto.setTextColor = function setTextColor(color) {
+          var colortest = new Color();
+          this._lbText.color = color;
+          return this;
+        };
+
+        _proto.setOutlineColor = function setOutlineColor(color) {
+          this._lbOutline.color = color;
+          return this;
+        };
+
+        return FloatingText;
+      }(FloatingObject), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_lbText", [_dec2], {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        initializer: function initializer() {
+          return null;
+        }
+      }), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, "_lbOutline", [_dec3], {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        initializer: function initializer() {
+          return null;
+        }
+      })), _class2)) || _class));
+
+      cclegacy._RF.pop();
+    }
+  };
+});
+
+System.register("chunks:///_virtual/GameConfig.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc'], function (exports) {
+  'use strict';
+
+  var _applyDecoratedDescriptor, _initializerDefineProperty, _inheritsLoose, _assertThisInitialized, cclegacy, _decorator, CCInteger, Component;
 
   return {
     setters: [function (module) {
@@ -6826,10 +6894,6 @@ System.register("chunks:///_virtual/GameConfig.ts", ['./rollupPluginModLoBabelHe
       _decorator = module._decorator;
       CCInteger = module.CCInteger;
       Component = module.Component;
-    }, function (module) {
-      Define = module.Define;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
     }],
     execute: function () {
       var _dec, _dec2, _class, _class2, _descriptor, _dec3, _dec4, _class4, _class5, _descriptor2, _dec5, _dec6, _class7, _class8, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10;
@@ -6897,13 +6961,7 @@ System.register("chunks:///_virtual/GameConfig.ts", ['./rollupPluginModLoBabelHe
 
         var _proto = GameConfig.prototype;
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.GameConfig, this);
-        };
-
-        _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(Define.Service.GameConfig);
-        };
+        _proto.init = function init() {};
 
         return GameConfig;
       }(Component), (_descriptor3 = _applyDecoratedDescriptor(_class8.prototype, "TimeFlip", [property], {
@@ -7025,7 +7083,6 @@ System.register("chunks:///_virtual/GameController.ts", ['./rollupPluginModLoBab
           _this._uiManager = null;
           _this._gAdapter = null;
           _this._sessionManager = null;
-          _this._onLoginResponse = void 0;
           _this._onJoinRoom = void 0;
           _this._onLeaveRoom = void 0;
           return _this;
@@ -7043,13 +7100,13 @@ System.register("chunks:///_virtual/GameController.ts", ['./rollupPluginModLoBab
 
           this._eventBus.on(GLOBAL_KEYS.Logout, this.onLogoutResponse, this);
 
-          this._eventBus.on(GLOBAL_KEYS.CreateRoom, this.onCreateRoomResponse, this);
+          this._eventBus.on(GLOBAL_KEYS.CreateTable, this.onCreateTableResponse, this);
 
-          this._eventBus.on(GLOBAL_KEYS.SearchRoom, this.onSearchRoomResponse, this);
+          this._eventBus.on(GLOBAL_KEYS.SearchTable, this.onSearchTableResponse, this);
 
-          this._eventBus.on(GLOBAL_KEYS.JoinRoom, this.onJoinRoomResponse, this);
+          this._eventBus.on(GLOBAL_KEYS.JoinTable, this.onJoinTableResponse, this);
 
-          this._eventBus.on(GLOBAL_KEYS.LeaveRoom, this.onLeaveRoomResponse, this);
+          this._eventBus.on(GLOBAL_KEYS.LeaveTable, this.onLeaveTableResponse, this);
 
           this._eventBus.on(GLOBAL_KEYS.UserInfor, this.onGetUserInfor, this);
 
@@ -7058,25 +7115,19 @@ System.register("chunks:///_virtual/GameController.ts", ['./rollupPluginModLoBab
           this._eventBus.on(GLOBAL_KEYS.Deposit, this.onDeposit, this);
         };
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.GameController, this);
-        };
-
         _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(Define.Service.GameController);
-
           if (this._eventBus) {
             this._eventBus.off(GLOBAL_KEYS.Login, this.onLoginResponse, this);
 
             this._eventBus.off(GLOBAL_KEYS.Logout, this.onLogoutResponse, this);
 
-            this._eventBus.off(GLOBAL_KEYS.CreateRoom, this.onCreateRoomResponse, this);
+            this._eventBus.off(GLOBAL_KEYS.CreateTable, this.onCreateTableResponse, this);
 
-            this._eventBus.off(GLOBAL_KEYS.SearchRoom, this.onSearchRoomResponse, this);
+            this._eventBus.off(GLOBAL_KEYS.SearchTable, this.onSearchTableResponse, this);
 
-            this._eventBus.off(GLOBAL_KEYS.JoinRoom, this.onJoinRoomResponse, this);
+            this._eventBus.off(GLOBAL_KEYS.JoinTable, this.onJoinTableResponse, this);
 
-            this._eventBus.off(GLOBAL_KEYS.LeaveRoom, this.onLeaveRoomResponse, this);
+            this._eventBus.off(GLOBAL_KEYS.LeaveTable, this.onLeaveTableResponse, this);
 
             this._eventBus.off(GLOBAL_KEYS.UserInfor, this.onGetUserInfor, this);
 
@@ -7086,16 +7137,13 @@ System.register("chunks:///_virtual/GameController.ts", ['./rollupPluginModLoBab
           }
         };
 
-        _proto.login = function login(userName, password, onGetResult) {
-          this._onLoginResponse = onGetResult;
-
+        _proto.login = function login(userName, password) {
           this._gAdapter.login(this._sessionManager.CurrentZone, userName, password);
         };
 
         _proto.logout = function logout() {
-          this._sessionManager.clearZone();
+          this._gAdapter.logout(this._sessionManager.CurrentZone); //this._sessionManager.clearZone();
 
-          this._gAdapter.logout(this._sessionManager.CurrentZone);
         };
 
         _proto.searchRoom = function searchRoom(groupId, onJoinRoomSuccess) {
@@ -7141,7 +7189,7 @@ System.register("chunks:///_virtual/GameController.ts", ['./rollupPluginModLoBab
 
         _proto.checkInTable = function checkInTable() {
           // fix later
-          this._gAdapter.checkInTable(this._sessionManager.CurrentZone, "pokerGame");
+          this._gAdapter.checkInTable(this._sessionManager.CurrentZone, "POKER");
         };
 
         _proto.setLeaveRoomCallback = function setLeaveRoomCallback(callback) {
@@ -7150,16 +7198,21 @@ System.register("chunks:///_virtual/GameController.ts", ['./rollupPluginModLoBab
         ;
 
         _proto.onLoginResponse = function onLoginResponse(data) {
-          var _this$_onLoginRespons;
-
-          (_this$_onLoginRespons = this._onLoginResponse) == null ? void 0 : _this$_onLoginRespons.call(this, data.success);
-
           if (data.success) {
             LogUtils.log("\u2705 Login Success"); // fix later
 
-            this._gAdapter.getUserInfor("SicboZone", "pokerGame");
+            this._gAdapter.getUserInfor("POKER", "POKER");
           } else {
             LogUtils.log("\u274C Login Failed");
+          }
+        };
+
+        _proto.onLogoutResponse = function onLogoutResponse(data) {
+          if (data.success) {
+            LogUtils.log("\u2705 Logout Success");
+            this.loadScene(Define.SceneName.Lobby);
+          } else {
+            LogUtils.log("\u274C Logout Failed with ReasonId: " + data.reasonId);
           }
         };
 
@@ -7168,26 +7221,17 @@ System.register("chunks:///_virtual/GameController.ts", ['./rollupPluginModLoBab
           userProfile.loadUserData(data);
         };
 
-        _proto.onLogoutResponse = function onLogoutResponse(data) {
-          if (data.success) {
-            LogUtils.log("\u2705 Logout Success");
-            this.loadScene(Define.SceneName.Login);
-          } else {
-            LogUtils.log("\u274C Logout Failed with ReasonId: " + data.reasonId);
-          }
-        };
-
-        _proto.onSearchRoomResponse = function onSearchRoomResponse(data) {
+        _proto.onSearchTableResponse = function onSearchTableResponse(data) {
           this._roomName = data.roomInfo.roomName;
           this.joinRoomWithNetwork(data.roomInfo.roomId, "", this._onJoinRoom);
         };
 
-        _proto.onCreateRoomResponse = function onCreateRoomResponse(data) {
+        _proto.onCreateTableResponse = function onCreateTableResponse(data) {
           this._roomName = data.roomInfo.roomName;
           this.joinRoomWithNetwork(data.roomInfo.roomId, "", this._onJoinRoom);
         };
 
-        _proto.onJoinRoomResponse = function onJoinRoomResponse(data) {
+        _proto.onJoinTableResponse = function onJoinTableResponse(data) {
           if (data.success) {
             this.joinRoom(data.roomId);
           } else {
@@ -7204,7 +7248,7 @@ System.register("chunks:///_virtual/GameController.ts", ['./rollupPluginModLoBab
           }
         };
 
-        _proto.onLeaveRoomResponse = function onLeaveRoomResponse(data) {
+        _proto.onLeaveTableResponse = function onLeaveTableResponse(data) {
           var _this$_onLeaveRoom;
 
           (_this$_onLeaveRoom = this._onLeaveRoom) == null ? void 0 : _this$_onLeaveRoom.call(this, data.success);
@@ -7303,45 +7347,7 @@ System.register("chunks:///_virtual/GameController.ts", ['./rollupPluginModLoBab
           }
 
           return loadSceneWithPreload;
-        }() // public guestLogin(): void {
-        //     var data = this.generateGuestInfor();
-        //     // this.getCallback('login')?.(true);
-        //     // this._callbackMap.delete('login');
-        //     if (data) {
-        //         LogUtils.log(`✅ Login Success`);
-        //         if (ONLINE) this._uiManager.showScreen(EUIScreens.TestNetwork);
-        //         this.onGetUserInfor(data)
-        //     }
-        //     else {
-        //         LogUtils.log(`❌ Login Failed`);
-        //     }
-        // }
-        ;
-
-        _proto.generateGuestInfor = function generateGuestInfor() {
-          var randomId = Math.floor(Math.random() * 10000000) + 1;
-          var idString = "user_" + randomId; // Create the object matching the interface
-
-          var userInfoData = {
-            userID: idString,
-            userName: idString,
-            avatarURL: "https://res.cloudinary.com/dvqf9cl2u/image/upload/anh-gai-xinh-sexy-2_nnf69k.jpg",
-            level: 1,
-            balance: 99999999
-          }; // return [
-          //   5,
-          //   {
-          //     payload: {},
-          //     requestId: `test_${idString}`,
-          //     datas: userInfoData,
-          //     action: "user_infor_response",
-          //     event: "user_infor_response"
-          //   }
-          // ];
-
-          return userInfoData;
-        } //LogUtils.log(JSON.stringify(generateFakeUser(), null, 2));
-        ;
+        }();
 
         return GameController;
       }(Component)) || _class);
@@ -7351,10 +7357,10 @@ System.register("chunks:///_virtual/GameController.ts", ['./rollupPluginModLoBab
   };
 });
 
-System.register("chunks:///_virtual/GameEntry.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ActionAfterInit.ts', './Define.ts', './ServiceLocator.ts', './LogUtils.ts', './EUICore.ts', './SceneUtils.ts', './UISplashScreen.ts', './AudioHelper.ts', './EAudio.ts', './INetworkManager.ts'], function (exports) {
+System.register("chunks:///_virtual/GameEntry.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './INetworkManager.ts', './EUICore.ts', './AsyncUtils.ts', './Define.ts', './SceneUtils.ts', './ServiceLocator.ts', './EAudio.ts', './UISplashScreen.ts', './AudioHelper.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, ActionAfterInit, Define, ServiceLocator, LogUtils, EUICore, SceneUtils, UISplashScreen, AudioHelper, EMusicId, WSState;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, Component, WSState, EUICore, AsyncUtils, Define, SceneUtils, ServiceLocator, EMusicId, UISplashScreen, AudioHelper;
 
   return {
     setters: [function (module) {
@@ -7367,26 +7373,25 @@ System.register("chunks:///_virtual/GameEntry.ts", ['./rollupPluginModLoBabelHel
     }, function (module) {
       cclegacy = module.cclegacy;
       _decorator = module._decorator;
+      Component = module.Component;
     }, function (module) {
-      ActionAfterInit = module.ActionAfterInit;
-    }, function (module) {
-      Define = module.Define;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
-      LogUtils = module.LogUtils;
+      WSState = module.WSState;
     }, function (module) {
       EUICore = module.EUICore;
     }, function (module) {
+      AsyncUtils = module.AsyncUtils;
+    }, function (module) {
+      Define = module.Define;
+    }, function (module) {
       SceneUtils = module.SceneUtils;
+    }, function (module) {
+      ServiceLocator = module.ServiceLocator;
+    }, function (module) {
+      EMusicId = module.EMusicId;
     }, function (module) {
       UISplashScreen = module.UISplashScreen;
     }, function (module) {
       AudioHelper = module.AudioHelper;
-    }, function (module) {
-      EMusicId = module.EMusicId;
-    }, function (module) {
-      WSState = module.WSState;
     }],
     execute: function () {
       var _dec, _dec2, _class, _class2, _descriptor;
@@ -7399,8 +7404,8 @@ System.register("chunks:///_virtual/GameEntry.ts", ['./rollupPluginModLoBabelHel
       var GameEntry = exports('GameEntry', (_dec = ccclass('GameEntry'), _dec2 = property({
         type: UISplashScreen,
         visible: true
-      }), _dec(_class = (_class2 = /*#__PURE__*/function (_ActionAfterInit) {
-        _inheritsLoose(GameEntry, _ActionAfterInit);
+      }), _dec(_class = (_class2 = /*#__PURE__*/function (_Component) {
+        _inheritsLoose(GameEntry, _Component);
 
         function GameEntry() {
           var _this;
@@ -7409,66 +7414,62 @@ System.register("chunks:///_virtual/GameEntry.ts", ['./rollupPluginModLoBabelHel
             args[_key] = arguments[_key];
           }
 
-          _this = _ActionAfterInit.call.apply(_ActionAfterInit, [this].concat(args)) || this;
+          _this = _Component.call.apply(_Component, [this].concat(args)) || this;
 
           _initializerDefineProperty(_this, "_uiSplashScreen", _descriptor, _assertThisInitialized(_this));
 
-          _this._isNetworkConnected = false;
           return _this;
         }
 
         var _proto = GameEntry.prototype;
 
-        _proto.execute = /*#__PURE__*/function () {
-          var _execute = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+        _proto.start = /*#__PURE__*/function () {
+          var _start = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
             var _this2 = this;
 
-            var network, networkController, session, audio, pool, uiManager, connectTask, tasks, loadAssetsTask;
+            var network, session, audio, pool, uiManager, connectTask, tasks, loadAssetsTask;
             return _regeneratorRuntime().wrap(function _callee2$(_context2) {
               while (1) {
                 switch (_context2.prev = _context2.next) {
                   case 0:
+                    _context2.next = 2;
+                    return AsyncUtils.waitForNextFrame();
+
+                  case 2:
                     network = ServiceLocator.get(Define.Service.NetworkManager);
-                    networkController = ServiceLocator.get(Define.Service.NetworkController);
                     session = ServiceLocator.get(Define.Service.SessionManager);
                     audio = ServiceLocator.get(Define.Service.AudioManager);
                     pool = ServiceLocator.get(Define.Service.PoolManager);
                     uiManager = ServiceLocator.get(Define.Service.UIManager);
-                    session.setZone("SicboZone");
+                    session.setZone("POKER");
 
                     this._uiSplashScreen.init();
 
                     this._uiSplashScreen.show();
 
-                    networkController.init();
-                    connectTask = new Promise(function (resolve) {
-                      if (network.State === WSState.CONNECTED) {
-                        _this2._isNetworkConnected = true;
-                        resolve();
-                        return;
-                      }
+                    connectTask = function connectTask() {
+                      return new Promise(function (resolve) {
+                        if (network.State === WSState.CONNECTED) {
+                          resolve();
+                          return;
+                        }
 
-                      var onOpen = function onOpen() {
-                        network.off(Define.EventBusKey.Socket.Open, onOpen);
-                        network.off(Define.EventBusKey.Socket.Close, onClose);
-                        _this2._isNetworkConnected = true;
-                        LogUtils.log("✅ Task 1 Done: Socket Connected");
-                        resolve();
-                      };
+                        var onOpen = function onOpen() {
+                          network.off(Define.EventBusKey.Socket.Open, onOpen);
+                          network.off(Define.EventBusKey.Socket.Close, onClose);
+                          resolve();
+                        };
 
-                      var onClose = function onClose() {
-                        uiManager.showAsync(EUICore.Reconnect);
-                      };
+                        var onClose = function onClose() {
+                          uiManager.showAsync(EUICore.Reconnect);
+                        };
 
-                      network.on(Define.EventBusKey.Socket.Open, onOpen);
-                      network.on(Define.EventBusKey.Socket.Close, onClose);
-                      network.connect();
-                    });
-                    _context2.next = 13;
-                    return connectTask;
+                        network.on(Define.EventBusKey.Socket.Open, onOpen);
+                        network.on(Define.EventBusKey.Socket.Close, onClose);
+                        network.connect();
+                      });
+                    };
 
-                  case 13:
-                    uiManager.hide(EUICore.Reconnect);
                     tasks = [{
                       id: "Load Audio",
                       description: "Loading Audio",
@@ -7491,6 +7492,13 @@ System.register("chunks:///_virtual/GameEntry.ts", ['./rollupPluginModLoBabelHel
                         return uiManager.loadData();
                       }
                     }, {
+                      id: "Connect Network",
+                      description: "Connect Network",
+                      weight: 1,
+                      onExecute: function onExecute() {
+                        return connectTask();
+                      }
+                    }, {
                       id: "Load Scene",
                       description: "Loading Scene",
                       weight: 1,
@@ -7502,7 +7510,7 @@ System.register("chunks:///_virtual/GameEntry.ts", ['./rollupPluginModLoBabelHel
                                 case 0:
                                   _context.next = 2;
                                   return new Promise(function (resolve) {
-                                    SceneUtils.preloadScene(Define.SceneName.Login, null, function () {
+                                    SceneUtils.preloadScene(Define.SceneName.Lobby, null, function () {
                                       return resolve();
                                     });
                                   });
@@ -7524,18 +7532,17 @@ System.register("chunks:///_virtual/GameEntry.ts", ['./rollupPluginModLoBabelHel
                     }];
                     loadAssetsTask = new Promise(function (resolve) {
                       _this2._uiSplashScreen.executeTasks(tasks, function () {
-                        LogUtils.log("✅ Task 2 Done: Assets Loaded");
                         resolve();
                       });
                     });
-                    _context2.next = 18;
+                    _context2.next = 15;
                     return loadAssetsTask;
 
-                  case 18:
+                  case 15:
                     AudioHelper.playMusic(EMusicId.BGM_Lobby);
-                    SceneUtils.loadScene(Define.SceneName.Login);
+                    SceneUtils.loadScene(Define.SceneName.Lobby);
 
-                  case 20:
+                  case 17:
                   case "end":
                     return _context2.stop();
                 }
@@ -7543,15 +7550,15 @@ System.register("chunks:///_virtual/GameEntry.ts", ['./rollupPluginModLoBabelHel
             }, _callee2, this);
           }));
 
-          function execute() {
-            return _execute.apply(this, arguments);
+          function start() {
+            return _start.apply(this, arguments);
           }
 
-          return execute;
+          return start;
         }();
 
         return GameEntry;
-      }(ActionAfterInit), _descriptor = _applyDecoratedDescriptor(_class2.prototype, "_uiSplashScreen", [_dec2], {
+      }(Component), _descriptor = _applyDecoratedDescriptor(_class2.prototype, "_uiSplashScreen", [_dec2], {
         configurable: true,
         enumerable: true,
         writable: true,
@@ -7619,10 +7626,10 @@ System.register("chunks:///_virtual/GameplayHandler.ts", ['./rollupPluginModLoBa
   };
 });
 
-System.register("chunks:///_virtual/GameUI.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ServiceLocator.ts', './Define.ts', './BaseUI.ts'], function (exports) {
+System.register("chunks:///_virtual/GameUI.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseUI.ts', './Define.ts', './ServiceLocator.ts'], function (exports) {
   'use strict';
 
-  var _inheritsLoose, cclegacy, _decorator, ServiceLocator, Define, BaseUI;
+  var _inheritsLoose, cclegacy, _decorator, BaseUI, Define, ServiceLocator;
 
   return {
     setters: [function (module) {
@@ -7631,11 +7638,11 @@ System.register("chunks:///_virtual/GameUI.ts", ['./rollupPluginModLoBabelHelper
       cclegacy = module.cclegacy;
       _decorator = module._decorator;
     }, function (module) {
-      ServiceLocator = module.ServiceLocator;
+      BaseUI = module.BaseUI;
     }, function (module) {
       Define = module.Define;
     }, function (module) {
-      BaseUI = module.BaseUI;
+      ServiceLocator = module.ServiceLocator;
     }],
     execute: function () {
       var _dec, _class;
@@ -7675,10 +7682,10 @@ System.register("chunks:///_virtual/GameUI.ts", ['./rollupPluginModLoBabelHelper
   };
 });
 
-System.register("chunks:///_virtual/GlobalAdapter.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseAdapter.ts', './NetworkManager.ts', './Define.ts', './ServiceLocator.ts', './LogUtils.ts'], function () {
+System.register("chunks:///_virtual/GlobalAdapter.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './Define.ts', './LogUtils.ts', './NetworkManager.ts', './BaseAdapter.ts'], function () {
   'use strict';
 
-  var _inheritsLoose, cclegacy, _decorator, BaseAdapter, MESSAGE, GLOBAL_KEYS, Define, ServiceLocator, LogUtils;
+  var _inheritsLoose, cclegacy, _decorator, GLOBAL_KEYS, LogUtils, MESSAGE, BaseAdapter;
 
   return {
     setters: [function (module) {
@@ -7687,16 +7694,13 @@ System.register("chunks:///_virtual/GlobalAdapter.ts", ['./rollupPluginModLoBabe
       cclegacy = module.cclegacy;
       _decorator = module._decorator;
     }, function (module) {
-      BaseAdapter = module.BaseAdapter;
+      GLOBAL_KEYS = module.GLOBAL_KEYS;
+    }, function (module) {
+      LogUtils = module.LogUtils;
     }, function (module) {
       MESSAGE = module.MESSAGE;
     }, function (module) {
-      GLOBAL_KEYS = module.GLOBAL_KEYS;
-      Define = module.Define;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
-      LogUtils = module.LogUtils;
+      BaseAdapter = module.BaseAdapter;
     }],
     execute: function () {
       var _dec, _class;
@@ -7749,7 +7753,7 @@ System.register("chunks:///_virtual/GlobalAdapter.ts", ['./rollupPluginModLoBabe
               reasonId: data[4]
             };
 
-            _this.eventBus.emit(GLOBAL_KEYS.LeaveRoom, leaveData);
+            _this.eventBus.emit(GLOBAL_KEYS.LeaveTable, leaveData);
           };
 
           _this.onJoinRoomResponse = function (data) {
@@ -7761,7 +7765,7 @@ System.register("chunks:///_virtual/GlobalAdapter.ts", ['./rollupPluginModLoBabe
               message: data[4]
             };
 
-            _this.eventBus.emit(GLOBAL_KEYS.JoinRoom, joinData);
+            _this.eventBus.emit(GLOBAL_KEYS.JoinTable, joinData);
           };
 
           _this.onPingResponse = function (data) {
@@ -7780,13 +7784,13 @@ System.register("chunks:///_virtual/GlobalAdapter.ts", ['./rollupPluginModLoBabe
           _this.onCreateRoomResponse = function (data) {
             var datas = data.datas;
 
-            _this.eventBus.emit(GLOBAL_KEYS.CreateRoom, datas);
+            _this.eventBus.emit(GLOBAL_KEYS.CreateTable, datas);
           };
 
           _this.onSearchRoom = function (data) {
             var datas = data.datas;
 
-            _this.eventBus.emit(GLOBAL_KEYS.SearchRoom, datas);
+            _this.eventBus.emit(GLOBAL_KEYS.SearchTable, datas);
           };
 
           _this.onCheckIsInTable = function (data) {
@@ -7816,30 +7820,25 @@ System.register("chunks:///_virtual/GlobalAdapter.ts", ['./rollupPluginModLoBabe
         _proto.setEvents = function setEvents() {
           this.network.on(GLOBAL_KEYS.Login, this.onLoginResponse);
           this.network.on(GLOBAL_KEYS.Logout, this.onLogoutResponse);
-          this.network.on(GLOBAL_KEYS.JoinRoom, this.onJoinRoomResponse);
-          this.network.on(GLOBAL_KEYS.LeaveRoom, this.onLeaveRoomResponse);
+          this.network.on(GLOBAL_KEYS.JoinTable, this.onJoinRoomResponse);
+          this.network.on(GLOBAL_KEYS.LeaveTable, this.onLeaveRoomResponse);
           this.network.on(GLOBAL_KEYS.Ping, this.onPingResponse);
-          this.network.on(GLOBAL_KEYS.CreateRoom, this.onCreateRoomResponse);
-          this.network.on(GLOBAL_KEYS.SearchRoom, this.onSearchRoom);
+          this.network.on(GLOBAL_KEYS.CreateTable, this.onCreateRoomResponse);
+          this.network.on(GLOBAL_KEYS.SearchTable, this.onSearchRoom);
           this.network.on(GLOBAL_KEYS.UserInfor, this.onUserInforResponse);
           this.network.on(GLOBAL_KEYS.IsInTable, this.onCheckIsInTable);
           this.network.on(GLOBAL_KEYS.Deposit, this.onDeposit);
         };
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.Adapter.Global, this);
-        };
-
         _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(Define.Service.Adapter.Global);
           if (!this.network) return;
           this.network.off(GLOBAL_KEYS.Login, this.onLoginResponse);
           this.network.off(GLOBAL_KEYS.Logout, this.onLogoutResponse);
-          this.network.off(GLOBAL_KEYS.JoinRoom, this.onJoinRoomResponse);
-          this.network.off(GLOBAL_KEYS.LeaveRoom, this.onLeaveRoomResponse);
+          this.network.off(GLOBAL_KEYS.JoinTable, this.onJoinRoomResponse);
+          this.network.off(GLOBAL_KEYS.LeaveTable, this.onLeaveRoomResponse);
           this.network.off(GLOBAL_KEYS.Ping, this.onPingResponse);
-          this.network.off(GLOBAL_KEYS.CreateRoom, this.onCreateRoomResponse);
-          this.network.off(GLOBAL_KEYS.SearchRoom, this.onSearchRoom);
+          this.network.off(GLOBAL_KEYS.CreateTable, this.onCreateRoomResponse);
+          this.network.off(GLOBAL_KEYS.SearchTable, this.onSearchRoom);
           this.network.off(GLOBAL_KEYS.UserInfor, this.onUserInforResponse);
           this.network.off(GLOBAL_KEYS.IsInTable, this.onCheckIsInTable);
           this.network.off(GLOBAL_KEYS.Deposit, this.onDeposit);
@@ -8154,10 +8153,26 @@ System.register("chunks:///_virtual/ILeaderboardModel.ts", ['cc'], function () {
   };
 });
 
-System.register("chunks:///_virtual/ImageCacheManager.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './DowloadHandler.ts', './ServiceLocator.ts', './Define.ts', './LogUtils.ts'], function (exports) {
+System.register("chunks:///_virtual/ILoginController.ts", ['cc'], function () {
   'use strict';
 
-  var _inheritsLoose, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, Component, DowloadHandler, ServiceLocator, Define, LogUtils;
+  var cclegacy;
+  return {
+    setters: [function (module) {
+      cclegacy = module.cclegacy;
+    }],
+    execute: function () {
+      cclegacy._RF.push({}, "1a53cyQfYpN8Yl8Kvha9uO7", "ILoginController", undefined);
+
+      cclegacy._RF.pop();
+    }
+  };
+});
+
+System.register("chunks:///_virtual/ImageCacheManager.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './DowloadHandler.ts', './LogUtils.ts'], function () {
+  'use strict';
+
+  var _inheritsLoose, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, Component, DowloadHandler, LogUtils;
 
   return {
     setters: [function (module) {
@@ -8171,10 +8186,6 @@ System.register("chunks:///_virtual/ImageCacheManager.ts", ['./rollupPluginModLo
     }, function (module) {
       DowloadHandler = module.DowloadHandler;
     }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
-      Define = module.Define;
-    }, function (module) {
       LogUtils = module.LogUtils;
     }],
     execute: function () {
@@ -8184,7 +8195,7 @@ System.register("chunks:///_virtual/ImageCacheManager.ts", ['./rollupPluginModLo
 
       var ccclass = _decorator.ccclass,
           property = _decorator.property;
-      var ImageCacheManager = exports('ImageCacheManager', (_dec = ccclass('ImageCacheManager'), _dec(_class = /*#__PURE__*/function (_Component) {
+      var ImageCacheManager = (_dec = ccclass('ImageCacheManager'), _dec(_class = /*#__PURE__*/function (_Component) {
         _inheritsLoose(ImageCacheManager, _Component);
 
         function ImageCacheManager() {
@@ -8202,13 +8213,7 @@ System.register("chunks:///_virtual/ImageCacheManager.ts", ['./rollupPluginModLo
 
         var _proto = ImageCacheManager.prototype;
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.ImageCache, this);
-        };
-
-        _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(Define.Service.ImageCache);
-        };
+        _proto.init = function init() {};
 
         _proto.loadSprite = /*#__PURE__*/function () {
           var _loadSprite = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(url) {
@@ -8372,7 +8377,7 @@ System.register("chunks:///_virtual/ImageCacheManager.ts", ['./rollupPluginModLo
         };
 
         return ImageCacheManager;
-      }(Component)) || _class));
+      }(Component)) || _class);
 
       cclegacy._RF.pop();
     }
@@ -8389,22 +8394,6 @@ System.register("chunks:///_virtual/IMinigameAudio.ts", ['cc'], function () {
     }],
     execute: function () {
       cclegacy._RF.push({}, "f8ec3SwUI1B/ZteJSjONqnG", "IMinigameAudio", undefined);
-
-      cclegacy._RF.pop();
-    }
-  };
-});
-
-System.register("chunks:///_virtual/IMinigameLancher.ts", ['cc'], function () {
-  'use strict';
-
-  var cclegacy;
-  return {
-    setters: [function (module) {
-      cclegacy = module.cclegacy;
-    }],
-    execute: function () {
-      cclegacy._RF.push({}, "fff0blUvVFKlpzW1ZCKehV4", "IMinigameLancher", undefined);
 
       cclegacy._RF.pop();
     }
@@ -8469,10 +8458,10 @@ System.register("chunks:///_virtual/INetworkManager.ts", ['cc'], function (expor
   };
 });
 
-System.register("chunks:///_virtual/InitUI.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseUI.ts', './AsyncUtils.ts', './ServiceLocator.ts', './Define.ts', './EUIGame.ts'], function (exports) {
+System.register("chunks:///_virtual/InitUI.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseUI.ts', './AsyncUtils.ts', './ServiceLocator.ts', './Define.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, Component, BaseUI, AsyncUtils, ServiceLocator, Define, EUIGame;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, Component, BaseUI, AsyncUtils, ServiceLocator, Define;
 
   return {
     setters: [function (module) {
@@ -8494,20 +8483,19 @@ System.register("chunks:///_virtual/InitUI.ts", ['./rollupPluginModLoBabelHelper
       ServiceLocator = module.ServiceLocator;
     }, function (module) {
       Define = module.Define;
-    }, function (module) {
-      EUIGame = module.EUIGame;
     }],
     execute: function () {
-      var _dec, _dec2, _class, _class2, _descriptor;
+      var _dec, _dec2, _dec3, _class, _class2, _descriptor;
 
       cclegacy._RF.push({}, "d540eL5wBpN/YEF8+ENr6Xd", "InitUI", undefined);
 
       var ccclass = _decorator.ccclass,
-          property = _decorator.property;
-      var InitUI = exports('InitUI', (_dec = ccclass('InitUI'), _dec2 = property({
+          property = _decorator.property,
+          executionOrder = _decorator.executionOrder;
+      var InitUI = exports('InitUI', (_dec = ccclass('InitUI'), _dec2 = executionOrder(-99), _dec3 = property({
         type: [BaseUI],
         visible: true
-      }), _dec(_class = (_class2 = /*#__PURE__*/function (_Component) {
+      }), _dec(_class = _dec2(_class = (_class2 = /*#__PURE__*/function (_Component) {
         _inheritsLoose(InitUI, _Component);
 
         function InitUI() {
@@ -8519,10 +8507,10 @@ System.register("chunks:///_virtual/InitUI.ts", ['./rollupPluginModLoBabelHelper
 
           _this = _Component.call.apply(_Component, [this].concat(args)) || this;
           _this._uimanager = null;
+          _this._regisUIs = [];
 
-          _initializerDefineProperty(_this, "_regisUIs", _descriptor, _assertThisInitialized(_this));
+          _initializerDefineProperty(_this, "_activeUIs", _descriptor, _assertThisInitialized(_this));
 
-          _this._regisKey = [];
           return _this;
         }
 
@@ -8532,32 +8520,36 @@ System.register("chunks:///_virtual/InitUI.ts", ['./rollupPluginModLoBabelHelper
           var _onLoad = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
             var _this2 = this;
 
-            var baseUIs;
+            var childs;
             return _regeneratorRuntime().wrap(function _callee$(_context) {
               while (1) {
                 switch (_context.prev = _context.next) {
                   case 0:
-                    _context.next = 2;
-                    return AsyncUtils.waitForNextFrame();
-
-                  case 2:
                     this._uimanager = ServiceLocator.get(Define.Service.UIManager);
-                    baseUIs = this.node.getComponentsInChildren(BaseUI);
-                    baseUIs.forEach(function (ui) {
-                      ui.init();
-                    });
+                    childs = this.node.children;
+                    childs.forEach(function (child) {
+                      var ui = child.getComponent(BaseUI);
 
-                    this._regisUIs.forEach(function (ui) {
-                      var uiType = EUIGame[ui.node.name];
+                      if (ui) {
+                        _this2._regisUIs.push(ui);
 
-                      if (uiType !== undefined) {
-                        _this2._regisKey.push(uiType);
-
-                        _this2._uimanager.register(EUIGame[ui.node.name], ui.node);
+                        ui.init();
                       }
                     });
 
+                    this._regisUIs.forEach(function (ui) {
+                      _this2._uimanager.register(ui.node.name, ui);
+                    });
+
+                    _context.next = 6;
+                    return AsyncUtils.waitForNextFrame();
+
                   case 6:
+                    this._activeUIs.forEach(function (ui) {
+                      return ui.show();
+                    });
+
+                  case 7:
                   case "end":
                     return _context.stop();
                 }
@@ -8575,20 +8567,22 @@ System.register("chunks:///_virtual/InitUI.ts", ['./rollupPluginModLoBabelHelper
         _proto.onDestroy = function onDestroy() {
           var _this3 = this;
 
-          this._regisKey.forEach(function (key) {
-            _this3._uimanager.unregister(EUIGame[key]);
+          this._regisUIs.forEach(function (ui) {
+            _this3._uimanager.unregister(ui.node.name);
+
+            ui.node.destroy();
           });
         };
 
         return InitUI;
-      }(Component), _descriptor = _applyDecoratedDescriptor(_class2.prototype, "_regisUIs", [_dec2], {
+      }(Component), _descriptor = _applyDecoratedDescriptor(_class2.prototype, "_activeUIs", [_dec3], {
         configurable: true,
         enumerable: true,
         writable: true,
         initializer: function initializer() {
           return [];
         }
-      }), _class2)) || _class));
+      }), _class2)) || _class) || _class));
 
       cclegacy._RF.pop();
     }
@@ -8967,6 +8961,141 @@ System.register("chunks:///_virtual/LoadUserInforBehaviour.ts", ['./rollupPlugin
   };
 });
 
+System.register("chunks:///_virtual/LoginController.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './LogUtils.ts', './PlayerPrefs.ts', './ServiceLocator.ts', './Define.ts'], function (exports) {
+  'use strict';
+
+  var _inheritsLoose, cclegacy, _decorator, Component, LogUtils, PlayerPrefs, ServiceLocator, Define, GLOBAL_KEYS;
+
+  return {
+    setters: [function (module) {
+      _inheritsLoose = module.inheritsLoose;
+    }, function (module) {
+      cclegacy = module.cclegacy;
+      _decorator = module._decorator;
+      Component = module.Component;
+    }, function (module) {
+      LogUtils = module.LogUtils;
+    }, function (module) {
+      PlayerPrefs = module.PlayerPrefs;
+    }, function (module) {
+      ServiceLocator = module.ServiceLocator;
+    }, function (module) {
+      Define = module.Define;
+      GLOBAL_KEYS = module.GLOBAL_KEYS;
+    }],
+    execute: function () {
+      var _dec, _class;
+
+      cclegacy._RF.push({}, "eff9eaG3TBJi6s85vUyg6XK", "LoginController", undefined);
+
+      var ccclass = _decorator.ccclass,
+          property = _decorator.property;
+      var LoginController = exports('LoginController', (_dec = ccclass('LoginController'), _dec(_class = /*#__PURE__*/function (_Component) {
+        _inheritsLoose(LoginController, _Component);
+
+        function LoginController() {
+          var _this;
+
+          for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+          }
+
+          _this = _Component.call.apply(_Component, [this].concat(args)) || this;
+          _this._gameController = null;
+          _this._eventBus = null;
+          _this._onCheckShowPopup = void 0;
+          _this.USERNAME_KEY = "username";
+          _this.PASSWORD_KEY = "password";
+          _this.REMEMBER_ME = "remember_me";
+          return _this;
+        }
+
+        var _proto = LoginController.prototype;
+
+        _proto.init = function init() {
+          this._gameController = ServiceLocator.get(Define.Service.GameController);
+          this._eventBus = ServiceLocator.get(Define.Service.EventBus);
+        };
+
+        _proto.start = function start() {
+          this._eventBus.on(GLOBAL_KEYS.Login, this.onLoginResponse, this);
+
+          this._eventBus.on(GLOBAL_KEYS.Logout, this.onLogoutResponse, this);
+        };
+
+        _proto.onDestroy = function onDestroy() {
+          this._eventBus.off(GLOBAL_KEYS.Login, this.onLoginResponse, this);
+
+          this._eventBus.off(GLOBAL_KEYS.Logout, this.onLogoutResponse, this);
+        };
+
+        _proto.login = function login(username, password) {
+          this._gameController.login(username, password);
+
+          if (this.getRemember()) {
+            PlayerPrefs.setString(this.USERNAME_KEY, username);
+            PlayerPrefs.setString(this.PASSWORD_KEY, password);
+          }
+        };
+
+        _proto.checkAutoLogin = function checkAutoLogin(onCheckShowPopup) {
+          this._onCheckShowPopup = onCheckShowPopup;
+
+          if (PlayerPrefs.hasKey(this.REMEMBER_ME) && PlayerPrefs.getBool(this.REMEMBER_ME) && PlayerPrefs.hasKey(this.USERNAME_KEY) && PlayerPrefs.hasKey(this.PASSWORD_KEY)) {
+            this.login(PlayerPrefs.getString(this.USERNAME_KEY), PlayerPrefs.getString(this.PASSWORD_KEY));
+          } else {
+            var _this$_onCheckShowPop;
+
+            (_this$_onCheckShowPop = this._onCheckShowPopup) == null ? void 0 : _this$_onCheckShowPop.call(this, true);
+          }
+        };
+
+        _proto.setRemember = function setRemember(canRemember) {
+          PlayerPrefs.setBool(this.REMEMBER_ME, canRemember);
+        };
+
+        _proto.getRemember = function getRemember() {
+          return PlayerPrefs.hasKey(this.REMEMBER_ME) && PlayerPrefs.getBool(this.REMEMBER_ME);
+        };
+
+        _proto.onLoginResponse = function onLoginResponse(data) {
+          if (data.success) {
+            if (data.success) {
+              var _this$_onCheckShowPop2;
+
+              (_this$_onCheckShowPop2 = this._onCheckShowPopup) == null ? void 0 : _this$_onCheckShowPop2.call(this, false);
+
+              this._gameController.checkInTable();
+            } else {
+              var _this$_onCheckShowPop3;
+
+              (_this$_onCheckShowPop3 = this._onCheckShowPopup) == null ? void 0 : _this$_onCheckShowPop3.call(this, true);
+            }
+          } else {
+            var _this$_onCheckShowPop4;
+
+            (_this$_onCheckShowPop4 = this._onCheckShowPopup) == null ? void 0 : _this$_onCheckShowPop4.call(this, true);
+          }
+        };
+
+        _proto.onLogoutResponse = function onLogoutResponse(data) {
+          if (data.success) {
+            PlayerPrefs.deleteKey(this.REMEMBER_ME);
+            PlayerPrefs.deleteKey(this.USERNAME_KEY);
+            PlayerPrefs.deleteKey(this.PASSWORD_KEY);
+          } else {
+            LogUtils.log("\u274C Logout Failed with ReasonId: " + data.reasonId);
+          }
+        };
+
+        return LoginController;
+      }(Component)) || _class));
+
+      cclegacy._RF.pop();
+    }
+  };
+});
+
 System.register("chunks:///_virtual/LogUtils.ts", ['cc'], function (exports) {
   'use strict';
 
@@ -9013,11 +9142,11 @@ System.register("chunks:///_virtual/LogUtils.ts", ['cc'], function (exports) {
   };
 });
 
-System.register("chunks:///_virtual/main", ['./AudioManager.ts', './AudioPlaying.ts', './IAudioManager.ts', './EventBus.ts', './IEventBus.ts', './IImageCache.ts', './ImageCacheManager.ts', './BaseLoader.ts', './INetworkController.ts', './INetworkManager.ts', './BaseAdapter.ts', './GlobalAdapter.ts', './IBaseAdapter.ts', './IGlobalAdapter.ts', './NetworkController.ts', './NetworkManager.ts', './array_buff.ts', './IPoolManager.ts', './PoolManager.ts', './ISessionManager.ts', './SessionManager.ts', './BaseAnimation.ts', './Drag.ts', './ETween.ts', './Fade.ts', './ITween.ts', './Rotating.ts', './Scaling.ts', './Translate.ts', './BaseUI.ts', './EUICore.ts', './IUIManager.ts', './BasePopup.ts', './UIManager.ts', './IUserProfile.ts', './UserData.ts', './UserProfile.ts', './AsyncUtils.ts', './ButtonUtils.ts', './Define.ts', './DontDestroy.ts', './DowloadHandler.ts', './EnumUtils.ts', './JsonUtils.ts', './LogUtils.ts', './MathUtils.ts', './PlayerPrefs.ts', './PositionUtils.ts', './ResourcesUtils.ts', './SceneUtils.ts', './ServiceInstaller.ts', './ServiceLocator.ts', './Timer.ts', './ToggleUtils.ts', './Tweener.ts', './VirtualScrollView.ts', './CardControl.ts', './CardController.ts', './CardInfor.ts', './CardAssetLoader.ts', './CardLibrary.ts', './CardTableUI.ts', './CardUserPanel.ts', './CardView.ts', './UICardLayer.ts', './UIChipLayer.ts', './ActionAfterInit.ts', './IMinigameAudio.ts', './MinigameAudio.ts', './ChipEffect.ts', './ChipGroup.ts', './FloatingObject.ts', './RotateObject.ts', './EAudio.ts', './EPoolType.ts', './EResultCode.ts', './GameEntry.ts', './ChipAssetLoader.ts', './ChipLibrary.ts', './GameController.ts', './IGameController.ts', './ServiceInitializer.ts', './EUIGame.ts', './GameUI.ts', './InitUI.ts', './BaseUserInforPanel.ts', './IMinigameUIManager.ts', './MiniUI.ts', './MinigameUIManager.ts', './UserInforUI.ts', './UILoading.ts', './UINoInternet.ts', './UIPopup.ts', './UIReconnect.ts', './UILoginScreen.ts', './UISplashScreen.ts', './AudioHelper.ts', './PoolHelper.ts', './Card.ts', './pokerData.ts', './EPhases.ts', './EUserOptions.ts', './HandRank.ts', './GameConfig.ts', './EDealer.ts', './ERole.ts', './EWheel.ts', './IPokerAdapter.ts', './IPokerLobbyAdapter.ts', './IBetable.ts', './ICardReceiver.ts', './IGameplayManager.ts', './IInitable.ts', './IMinigameLancher.ts', './IPokerController.ts', './IPokerLobbyController.ts', './IPokerUIManager.ts', './IResetable.ts', './ISetGameplayManager.ts', './IUserManager.ts', './MiniGame.ts', './MinigameLancher.ts', './BetManager.ts', './DeckManager.ts', './GameplayHandler.ts', './BasePokerControl.ts', './PlayerDataControl.ts', './UIEffectControl.ts', './PokerController.ts', './PokerLobbyController.ts', './PhaseManager.ts', './PokerGameplayManager.ts', './TableManager.ts', './RoleAssigner.ts', './BigBlind.ts', './Dealer.ts', './SmallBlind.ts', './UserRole.ts', './TurnHandler.ts', './UserManager.ts', './PokerManager.ts', './PokerCheat.ts', './ILeaderboardModel.ts', './PokerAdapter.ts', './PokerLobbyAdapter.ts', './BasePhase.ts', './AssignBlindsBehaviour.ts', './AssignDealerBehaviour.ts', './BaseBehaviour.ts', './BetBehaviour.ts', './BlindBetBehaviour.ts', './CheckFoldBehaviour.ts', './CheckHandRankBehaviour.ts', './CheckPotBehaviour.ts', './CreateDeckBehaviour.ts', './DealCardOnTableBehaviour.ts', './DealCardToUserBehaviour.ts', './LoadTableInforBehaviour.ts', './LoadUserInforBehaviour.ts', './MoveChipToPotBehaviour.ts', './OpenTableInferfaceBehaviour.ts', './OpenUserInterfaceBehaviour.ts', './SetStartTurnBehaviour.ts', './SetTableBetBehaviour.ts', './ShowhandBehaviour.ts', './ShuffleBehaviour.ts', './CheckUserAllInBehaviour.ts', './ConditionBehaviour.ts', './SkipBehaviour.ts', './WaitForSecondsBehaviour.ts', './WinPotBehaviour.ts', './RoomConfig.ts', './Pot.ts', './Table.ts', './PokerDepositLayer.ts', './PokerTableUI.ts', './PokerUIManager.ts', './UIDealer.ts', './UIPlayerCard.ts', './UIWheel.ts', './UICheatHub.ts', './UIDeposit.ts', './UIGamemenu.ts', './UIJoinRoom.ts', './UILeaderboard.ts', './UINeedPassword.ts', './UIRebuyin.ts', './UISetting.ts', './UITutorial.ts', './UIUserProfile.ts', './UIBackScreen.ts', './UIMainmenu.ts', './UITestNetwork.ts', './PokerInforPanel.ts', './UserHUD.ts', './UserHandRankUI.ts', './UserNotiOption.ts', './UserOptionsPanel.ts', './UserRaisePanel.ts', './PokerUser.ts', './UserCurrency.ts', './CheckHandRank.ts', './DefinePoker.ts', './PokerSimpleAI.ts'], function () {
+System.register("chunks:///_virtual/main", ['./AudioManager.ts', './AudioPlaying.ts', './IAudioManager.ts', './EventBus.ts', './IEventBus.ts', './IImageCache.ts', './ImageCacheManager.ts', './BaseLoader.ts', './INetworkController.ts', './INetworkManager.ts', './BaseAdapter.ts', './GlobalAdapter.ts', './IBaseAdapter.ts', './IGlobalAdapter.ts', './NetworkController.ts', './NetworkManager.ts', './array_buff.ts', './IPoolManager.ts', './PoolManager.ts', './ISessionManager.ts', './SessionManager.ts', './BaseAnimation.ts', './Drag.ts', './ETween.ts', './Fade.ts', './ITween.ts', './Rotating.ts', './Scaling.ts', './Translate.ts', './BaseUI.ts', './EUICore.ts', './IUIManager.ts', './BasePopup.ts', './UIManager.ts', './IUserProfile.ts', './UserData.ts', './UserProfile.ts', './AsyncUtils.ts', './ButtonUtils.ts', './Define.ts', './DontDestroy.ts', './DowloadHandler.ts', './EnumUtils.ts', './JsonUtils.ts', './LogUtils.ts', './MathUtils.ts', './PlayerPrefs.ts', './PositionUtils.ts', './ResourcesUtils.ts', './SceneUtils.ts', './ServiceInstaller.ts', './ServiceLocator.ts', './Timer.ts', './ToggleUtils.ts', './Tweener.ts', './VirtualScrollView.ts', './CardControl.ts', './CardController.ts', './CardInfor.ts', './CardAssetLoader.ts', './CardLibrary.ts', './CardTableUI.ts', './CardUserPanel.ts', './CardView.ts', './UICardLayer.ts', './UIChipLayer.ts', './ActionAfterInit.ts', './IMinigameAudio.ts', './MinigameAudio.ts', './ChipEffect.ts', './ChipGroup.ts', './FloatingObject.ts', './FloatingText.ts', './RotateObject.ts', './EAudio.ts', './EPoolType.ts', './EResultCode.ts', './GameEntry.ts', './ChipAssetLoader.ts', './ChipLibrary.ts', './GameController.ts', './IGameController.ts', './ILoginController.ts', './LoginController.ts', './ServiceInitializer.ts', './EUIGame.ts', './GameUI.ts', './InitUI.ts', './BaseUserInforPanel.ts', './IMinigameUIManager.ts', './MiniUI.ts', './MinigameUIManager.ts', './UserInforUI.ts', './UILoading.ts', './UINoInternet.ts', './UIPopup.ts', './UIReconnect.ts', './PopupBase.ts', './UILoginPopup.ts', './UISplashScreen.ts', './AudioHelper.ts', './PoolHelper.ts', './Card.ts', './pokerData.ts', './EPhases.ts', './EUserOptions.ts', './HandRank.ts', './GameConfig.ts', './EDealer.ts', './ERole.ts', './EWheel.ts', './IPokerAdapter.ts', './IPokerLobbyAdapter.ts', './IBetable.ts', './ICardReceiver.ts', './IGameplayManager.ts', './IInitable.ts', './IPokerController.ts', './IPokerLobbyController.ts', './IPokerUIManager.ts', './IResetable.ts', './ISetGameplayManager.ts', './IUserManager.ts', './MiniGame.ts', './BetManager.ts', './DeckManager.ts', './GameplayHandler.ts', './BasePokerControl.ts', './PlayerDataControl.ts', './UIEffectControl.ts', './PokerController.ts', './PokerLobbyController.ts', './PhaseManager.ts', './PokerGameplayManager.ts', './TableManager.ts', './RoleAssigner.ts', './BigBlind.ts', './Dealer.ts', './SmallBlind.ts', './UserRole.ts', './TurnHandler.ts', './UserManager.ts', './PokerManager.ts', './PokerCheat.ts', './ILeaderboardModel.ts', './PokerAdapter.ts', './PokerLobbyAdapter.ts', './BasePhase.ts', './AssignBlindsBehaviour.ts', './AssignDealerBehaviour.ts', './BaseBehaviour.ts', './BetBehaviour.ts', './BlindBetBehaviour.ts', './CheckFoldBehaviour.ts', './CheckHandRankBehaviour.ts', './CheckPotBehaviour.ts', './CreateDeckBehaviour.ts', './DealCardOnTableBehaviour.ts', './DealCardToUserBehaviour.ts', './LoadTableInforBehaviour.ts', './LoadUserInforBehaviour.ts', './MoveChipToPotBehaviour.ts', './OpenTableInferfaceBehaviour.ts', './OpenUserInterfaceBehaviour.ts', './SetStartTurnBehaviour.ts', './SetTableBetBehaviour.ts', './ShowhandBehaviour.ts', './ShuffleBehaviour.ts', './CheckUserAllInBehaviour.ts', './ConditionBehaviour.ts', './SkipBehaviour.ts', './WaitForSecondsBehaviour.ts', './WinPotBehaviour.ts', './RoomConfig.ts', './Pot.ts', './Table.ts', './PokerDepositLayer.ts', './PokerTableUI.ts', './PokerUIManager.ts', './UIDealer.ts', './UIPlayerCard.ts', './UIWheel.ts', './UICheatHub.ts', './UIDeposit.ts', './UIGamemenu.ts', './UIJoinRoom.ts', './UILeaderboard.ts', './UINeedPassword.ts', './UIRebuyin.ts', './UISetting.ts', './UITutorial.ts', './UIUserProfile.ts', './UIBackScreen.ts', './UIMainmenu.ts', './UITestNetwork.ts', './PokerInforPanel.ts', './UserHUD.ts', './UserHandRankUI.ts', './UserNotiOption.ts', './UserOptionsPanel.ts', './UserRaisePanel.ts', './PokerUser.ts', './UserCurrency.ts', './CheckHandRank.ts', './DefinePoker.ts', './PokerSimpleAI.ts'], function () {
   'use strict';
 
   return {
-    setters: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    setters: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
     execute: function () {}
   };
 });
@@ -9104,10 +9233,10 @@ System.register("chunks:///_virtual/MiniGame.ts", ['./rollupPluginModLoBabelHelp
   };
 });
 
-System.register("chunks:///_virtual/MinigameAudio.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './Define.ts', './ServiceLocator.ts', './AudioHelper.ts'], function () {
+System.register("chunks:///_virtual/MinigameAudio.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './AudioHelper.ts'], function () {
   'use strict';
 
-  var _inheritsLoose, cclegacy, _decorator, Component, Define, ServiceLocator, AudioHelper;
+  var _inheritsLoose, cclegacy, _decorator, Component, AudioHelper;
 
   return {
     setters: [function (module) {
@@ -9116,10 +9245,6 @@ System.register("chunks:///_virtual/MinigameAudio.ts", ['./rollupPluginModLoBabe
       cclegacy = module.cclegacy;
       _decorator = module._decorator;
       Component = module.Component;
-    }, function (module) {
-      Define = module.Define;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
     }, function (module) {
       AudioHelper = module.AudioHelper;
     }],
@@ -9147,16 +9272,12 @@ System.register("chunks:///_virtual/MinigameAudio.ts", ['./rollupPluginModLoBabe
 
         var _proto = MinigameAudio.prototype;
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.MinigameAudio, this);
-        };
+        _proto.init = function init() {};
 
         _proto.onDestroy = function onDestroy() {
           this._audioMinigameSet.forEach(function (a) {
             return AudioHelper.stopSFX(a);
           });
-
-          ServiceLocator.unregister(Define.Service.MinigameAudio);
         };
 
         _proto.playSFX = function playSFX(id, isLoop) {
@@ -9177,171 +9298,10 @@ System.register("chunks:///_virtual/MinigameAudio.ts", ['./rollupPluginModLoBabe
   };
 });
 
-System.register("chunks:///_virtual/MinigameLancher.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './MiniGame.ts', './RoomConfig.ts', './ServiceLocator.ts', './Define.ts'], function (exports) {
+System.register("chunks:///_virtual/MinigameUIManager.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseUI.ts', './MiniUI.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _initializerDefineProperty, _inheritsLoose, _assertThisInitialized, _createForOfIteratorHelperLoose, _createClass, cclegacy, _decorator, Enum, Prefab, instantiate, Component, MiniGame, EMiniGameType, ServiceLocator, Define;
-
-  return {
-    setters: [function (module) {
-      _applyDecoratedDescriptor = module.applyDecoratedDescriptor;
-      _initializerDefineProperty = module.initializerDefineProperty;
-      _inheritsLoose = module.inheritsLoose;
-      _assertThisInitialized = module.assertThisInitialized;
-      _createForOfIteratorHelperLoose = module.createForOfIteratorHelperLoose;
-      _createClass = module.createClass;
-    }, function (module) {
-      cclegacy = module.cclegacy;
-      _decorator = module._decorator;
-      Enum = module.Enum;
-      Prefab = module.Prefab;
-      instantiate = module.instantiate;
-      Component = module.Component;
-    }, function (module) {
-      MiniGame = module.MiniGame;
-    }, function (module) {
-      EMiniGameType = module.EMiniGameType;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
-      Define = module.Define;
-    }],
-    execute: function () {
-      var _dec, _dec2, _dec3, _class, _class2, _descriptor, _descriptor2, _dec4, _dec5, _class4, _class5, _descriptor3;
-
-      cclegacy._RF.push({}, "e93e1m+GWBGOKwZrpD0i+W3", "MinigameLancher", undefined);
-
-      var ccclass = _decorator.ccclass,
-          property = _decorator.property;
-      var MiniGameInfor = exports('MiniGameInfor', (_dec = ccclass('MiniGameInfor'), _dec2 = property({
-        type: Enum(EMiniGameType),
-        visible: true
-      }), _dec3 = property({
-        type: Prefab,
-        visible: true
-      }), _dec(_class = (_class2 = function MiniGameInfor() {
-        _initializerDefineProperty(this, "MiniGameType", _descriptor, this);
-
-        _initializerDefineProperty(this, "MiniGame", _descriptor2, this);
-      }, (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "MiniGameType", [_dec2], {
-        configurable: true,
-        enumerable: true,
-        writable: true,
-        initializer: function initializer() {
-          return 0;
-        }
-      }), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, "MiniGame", [_dec3], {
-        configurable: true,
-        enumerable: true,
-        writable: true,
-        initializer: null
-      })), _class2)) || _class));
-      var MinimgameLancher = exports('MinimgameLancher', (_dec4 = ccclass('MinimgameLancher'), _dec5 = property({
-        type: [MiniGameInfor],
-        visible: true
-      }), _dec4(_class4 = (_class5 = /*#__PURE__*/function (_Component) {
-        _inheritsLoose(MinimgameLancher, _Component);
-
-        function MinimgameLancher() {
-          var _this;
-
-          for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-            args[_key] = arguments[_key];
-          }
-
-          _this = _Component.call.apply(_Component, [this].concat(args)) || this;
-
-          _initializerDefineProperty(_this, "minigameInfors", _descriptor3, _assertThisInitialized(_this));
-
-          _this._currentMiniGame = null;
-          return _this;
-        }
-
-        var _proto = MinimgameLancher.prototype;
-
-        _proto.onEnable = function onEnable() {
-          ServiceLocator.register(Define.Service.MinigameManager, this);
-        };
-
-        _proto.onDisable = function onDisable() {
-          ServiceLocator.unregister(Define.Service.MinigameManager);
-        };
-
-        _proto.joinRoom = function joinRoom(minigameType, roomInfo) {
-          this.createGame(minigameType);
-        };
-
-        _proto.startGame = function startGame() {//this._currentMiniGame.startGame();
-        };
-
-        _proto.createGame = function createGame(minigameType) {
-          var newNode = instantiate(this.getMiniGame(minigameType));
-          newNode.setParent(this.node);
-          var comps = newNode.getComponents(Component);
-
-          for (var _iterator = _createForOfIteratorHelperLoose(comps), _step; !(_step = _iterator()).done;) {
-            var comp = _step.value;
-
-            if (comp instanceof MiniGame) {
-              this._currentMiniGame = comp;
-              break;
-            }
-          }
-
-          if (!this._currentMiniGame) {
-            console.error("Prefab is not type Minigame");
-            return;
-          } //this._currentMiniGame.initGame();
-
-        };
-
-        _proto.removeGame = function removeGame() {
-          this._currentMiniGame.node.destroy();
-        };
-
-        _proto.getMiniGameInfor = function getMiniGameInfor(minigameType) {
-          return this.minigameInfors.find(function (m) {
-            return m.MiniGameType === minigameType;
-          });
-        };
-
-        _proto.getMiniGame = function getMiniGame(minigameType) {
-          var minigameInfor = this.getMiniGameInfor(minigameType);
-
-          if (!minigameInfor) {
-            console.error("Minigame Type is not found");
-            return null;
-          }
-
-          return minigameInfor.MiniGame;
-        };
-
-        _createClass(MinimgameLancher, [{
-          key: "currentMiniGame",
-          get: function get() {
-            return this._currentMiniGame;
-          }
-        }]);
-
-        return MinimgameLancher;
-      }(Component), _descriptor3 = _applyDecoratedDescriptor(_class5.prototype, "minigameInfors", [_dec5], {
-        configurable: true,
-        enumerable: true,
-        writable: true,
-        initializer: function initializer() {
-          return [];
-        }
-      }), _class5)) || _class4));
-
-      cclegacy._RF.pop();
-    }
-  };
-});
-
-System.register("chunks:///_virtual/MinigameUIManager.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './MiniUI.ts', './ServiceLocator.ts', './Define.ts'], function (exports) {
-  'use strict';
-
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _createForOfIteratorHelperLoose, cclegacy, _decorator, Component, MiniUI, ServiceLocator, Define;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _createForOfIteratorHelperLoose, cclegacy, _decorator, BaseUI, MiniUI;
 
   return {
     setters: [function (module) {
@@ -9353,13 +9313,10 @@ System.register("chunks:///_virtual/MinigameUIManager.ts", ['./rollupPluginModLo
     }, function (module) {
       cclegacy = module.cclegacy;
       _decorator = module._decorator;
-      Component = module.Component;
+    }, function (module) {
+      BaseUI = module.BaseUI;
     }, function (module) {
       MiniUI = module.MiniUI;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
-      Define = module.Define;
     }],
     execute: function () {
       var _dec, _dec2, _class, _class2, _descriptor;
@@ -9371,8 +9328,8 @@ System.register("chunks:///_virtual/MinigameUIManager.ts", ['./rollupPluginModLo
       var MinigameUIManager = exports('MinigameUIManager', (_dec = ccclass('MinigameUIManager'), _dec2 = property({
         type: MiniUI,
         visible: true
-      }), _dec(_class = (_class2 = /*#__PURE__*/function (_Component) {
-        _inheritsLoose(MinigameUIManager, _Component);
+      }), _dec(_class = (_class2 = /*#__PURE__*/function (_BaseUI) {
+        _inheritsLoose(MinigameUIManager, _BaseUI);
 
         function MinigameUIManager() {
           var _this;
@@ -9381,23 +9338,19 @@ System.register("chunks:///_virtual/MinigameUIManager.ts", ['./rollupPluginModLo
             args[_key] = arguments[_key];
           }
 
-          _this = _Component.call.apply(_Component, [this].concat(args)) || this;
+          _this = _BaseUI.call.apply(_BaseUI, [this].concat(args)) || this;
 
           _initializerDefineProperty(_this, "_baseUIs", _descriptor, _assertThisInitialized(_this));
 
-          _this.userProfile = null;
-          _this.uiManager = null;
           return _this;
         }
 
         var _proto = MinigameUIManager.prototype;
 
         _proto.init = function init() {
-          this.userProfile = ServiceLocator.get(Define.Service.UserProfile);
-          this.uiManager = ServiceLocator.get(Define.Service.UIManager);
-
           this._baseUIs.forEach(function (ui) {
             ui.init();
+            ui.resetState();
           });
 
           this._baseUIs.forEach(function (ui) {
@@ -9425,7 +9378,7 @@ System.register("chunks:///_virtual/MinigameUIManager.ts", ['./rollupPluginModLo
         };
 
         return MinigameUIManager;
-      }(Component), _descriptor = _applyDecoratedDescriptor(_class2.prototype, "_baseUIs", [_dec2], {
+      }(BaseUI), _descriptor = _applyDecoratedDescriptor(_class2.prototype, "_baseUIs", [_dec2], {
         configurable: true,
         enumerable: true,
         writable: true,
@@ -9593,10 +9546,10 @@ System.register("chunks:///_virtual/MoveChipToPotBehaviour.ts", ['./rollupPlugin
   };
 });
 
-System.register("chunks:///_virtual/NetworkController.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './Timer.ts', './Define.ts', './ServiceLocator.ts', './EUICore.ts'], function (exports) {
+System.register("chunks:///_virtual/NetworkController.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './Timer.ts', './Define.ts', './ServiceLocator.ts', './EUICore.ts', './INetworkManager.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _createClass, cclegacy, _decorator, Component, Timer, Define, GLOBAL_KEYS, ServiceLocator, EUICore;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _createClass, cclegacy, _decorator, Component, Timer, Define, GLOBAL_KEYS, ServiceLocator, EUICore, WSState;
 
   return {
     setters: [function (module) {
@@ -9618,9 +9571,11 @@ System.register("chunks:///_virtual/NetworkController.ts", ['./rollupPluginModLo
       ServiceLocator = module.ServiceLocator;
     }, function (module) {
       EUICore = module.EUICore;
+    }, function (module) {
+      WSState = module.WSState;
     }],
     execute: function () {
-      var _dec, _dec2, _dec3, _dec4, _dec5, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4;
+      var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5;
 
       cclegacy._RF.push({}, "da392exAChNFJ6B5C7RigyP", "NetworkController", undefined);
 
@@ -9633,6 +9588,8 @@ System.register("chunks:///_virtual/NetworkController.ts", ['./rollupPluginModLo
       }), _dec4 = property({
         visible: true
       }), _dec5 = property({
+        visible: true
+      }), _dec6 = property({
         visible: true
       }), _dec(_class = (_class2 = /*#__PURE__*/function (_Component) {
         _inheritsLoose(NetworkController, _Component);
@@ -9659,11 +9616,22 @@ System.register("chunks:///_virtual/NetworkController.ts", ['./rollupPluginModLo
 
           _initializerDefineProperty(_this, "_reconnectMaxCount", _descriptor4, _assertThisInitialized(_this));
 
+          _initializerDefineProperty(_this, "_wsNoResponseWait", _descriptor5, _assertThisInitialized(_this));
+
+          _this._wsNoResponseTimer = new Timer("WSNoresponse Timer");
           _this._watingTimer = new Timer("Wating Timer");
           _this._heartbeatTimer = new Timer("Heartbeat Timer");
           _this._reconnectTimer = new Timer("Reconnect Timer");
           _this._isSocketOpen = false;
           _this._reconnectAttemp = 0;
+
+          _this.onSocketStartConnect = function () {
+            _this._wsNoResponseTimer.start(_this._wsNoResponseWait, null, function () {
+              if (_this._network.State !== WSState.CONNECTING) return;
+
+              _this._network.forceClose();
+            });
+          };
 
           _this.onSocketOpen = function () {
             _this._isSocketOpen = true;
@@ -9673,6 +9641,8 @@ System.register("chunks:///_virtual/NetworkController.ts", ['./rollupPluginModLo
             _this._reconnectAttemp = 0;
 
             _this._reconnectTimer.stop();
+
+            _this._wsNoResponseTimer.stop();
 
             _this._uiManager.hide(EUICore.Reconnect);
 
@@ -9687,6 +9657,8 @@ System.register("chunks:///_virtual/NetworkController.ts", ['./rollupPluginModLo
 
             _this._heartbeatTimer.stop();
 
+            _this._wsNoResponseTimer.stop();
+
             _this.onReconnect();
           };
 
@@ -9698,10 +9670,6 @@ System.register("chunks:///_virtual/NetworkController.ts", ['./rollupPluginModLo
         }
 
         var _proto = NetworkController.prototype;
-
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.NetworkController, this);
-        };
 
         _proto.init = function init() {
           this._network = ServiceLocator.get(Define.Service.NetworkManager);
@@ -9716,18 +9684,20 @@ System.register("chunks:///_virtual/NetworkController.ts", ['./rollupPluginModLo
 
           this._network.on(Define.EventBusKey.Socket.Active, this.onSocketActive);
 
+          this._network.on(Define.EventBusKey.Socket.StartConnect, this.onSocketStartConnect);
+
           this._eventBus.on(GLOBAL_KEYS.Ping, this.onPongResponse, this);
         };
 
         _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(Define.Service.NetworkController);
-
           if (this._network) {
             this._network.off(Define.EventBusKey.Socket.Open, this.onSocketOpen);
 
             this._network.off(Define.EventBusKey.Socket.Close, this.onSocketClose);
 
             this._network.off(Define.EventBusKey.Socket.Active, this.onSocketActive);
+
+            this._network.off(Define.EventBusKey.Socket.StartConnect, this.onSocketStartConnect);
           }
 
           if (this._eventBus) {
@@ -9827,6 +9797,13 @@ System.register("chunks:///_virtual/NetworkController.ts", ['./rollupPluginModLo
         initializer: function initializer() {
           return 5;
         }
+      }), _descriptor5 = _applyDecoratedDescriptor(_class2.prototype, "_wsNoResponseWait", [_dec6], {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        initializer: function initializer() {
+          return 5;
+        }
       })), _class2)) || _class));
 
       cclegacy._RF.pop();
@@ -9834,10 +9811,10 @@ System.register("chunks:///_virtual/NetworkController.ts", ['./rollupPluginModLo
   };
 });
 
-System.register("chunks:///_virtual/NetworkManager.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './Define.ts', './ServiceLocator.ts', './LogUtils.ts', './INetworkManager.ts'], function (exports) {
+System.register("chunks:///_virtual/NetworkManager.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './Define.ts', './LogUtils.ts', './INetworkManager.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _createClass, cclegacy, _decorator, Component, Define, GLOBAL_KEYS, ServiceLocator, LogUtils, WSState;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _createClass, cclegacy, _decorator, Component, Define, GLOBAL_KEYS, LogUtils, WSState;
 
   return {
     setters: [function (module) {
@@ -9853,8 +9830,6 @@ System.register("chunks:///_virtual/NetworkManager.ts", ['./rollupPluginModLoBab
     }, function (module) {
       Define = module.Define;
       GLOBAL_KEYS = module.GLOBAL_KEYS;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
     }, function (module) {
       LogUtils = module.LogUtils;
     }, function (module) {
@@ -9917,13 +9892,7 @@ System.register("chunks:///_virtual/NetworkManager.ts", ['./rollupPluginModLoBab
 
         var _proto = NetworkManager.prototype;
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.NetworkManager, this);
-        };
-
-        _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(Define.Service.NetworkManager);
-        };
+        _proto.init = function init() {};
 
         _proto.connect = function connect() {
           var _this2 = this;
@@ -9931,6 +9900,7 @@ System.register("chunks:///_virtual/NetworkManager.ts", ['./rollupPluginModLoBab
           this._socket = new WebSocket(this.serverURL);
           LogUtils.log("🌀 WS Connecting");
           this._state = WSState.CONNECTING;
+          this.emit(Define.EventBusKey.Socket.StartConnect);
 
           this._socket.onopen = function () {
             LogUtils.log("✅ WS Connected");
@@ -9987,11 +9957,11 @@ System.register("chunks:///_virtual/NetworkManager.ts", ['./rollupPluginModLoBab
               break;
 
             case RESPONSE.JOIN_ROOM:
-              this.emit(GLOBAL_KEYS.JoinRoom, data);
+              this.emit(GLOBAL_KEYS.JoinTable, data);
               break;
 
             case RESPONSE.LEAVE_ROOM:
-              this.emit(GLOBAL_KEYS.LeaveRoom, data);
+              this.emit(GLOBAL_KEYS.LeaveTable, data);
               break;
 
             case RESPONSE.EXTENSION:
@@ -10341,10 +10311,10 @@ System.register("chunks:///_virtual/PhaseManager.ts", ['./rollupPluginModLoBabel
   };
 });
 
-System.register("chunks:///_virtual/PlayerDataControl.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BasePokerControl.ts', './EUserOptions.ts', './PokerInforPanel.ts', './ServiceLocator.ts', './Define.ts'], function (exports) {
+System.register("chunks:///_virtual/PlayerDataControl.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BasePokerControl.ts', './EUserOptions.ts', './PokerInforPanel.ts', './ServiceLocator.ts', './Define.ts', './DefinePoker.ts'], function (exports) {
   'use strict';
 
-  var _inheritsLoose, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, BasePokerControl, EUserOptions, EUserState, EBetPotType, ServiceLocator, Define;
+  var _inheritsLoose, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, BasePokerControl, EUserOptions, EUserState, EBetPotType, ServiceLocator, Define, POKER_KEYS;
 
   return {
     setters: [function (module) {
@@ -10365,6 +10335,8 @@ System.register("chunks:///_virtual/PlayerDataControl.ts", ['./rollupPluginModLo
       ServiceLocator = module.ServiceLocator;
     }, function (module) {
       Define = module.Define;
+    }, function (module) {
+      POKER_KEYS = module.POKER_KEYS;
     }],
     execute: function () {
       var _dec, _class;
@@ -10385,6 +10357,7 @@ System.register("chunks:///_virtual/PlayerDataControl.ts", ['./rollupPluginModLo
 
           _this = _BasePokerControl.call.apply(_BasePokerControl, [this].concat(args)) || this;
           _this._imageCache = null;
+          _this._eventBus = null;
           _this._controller = null;
           _this._currentTurnPanel = null;
           _this._currentBetPotAction = EBetPotType.Call;
@@ -10398,6 +10371,7 @@ System.register("chunks:///_virtual/PlayerDataControl.ts", ['./rollupPluginModLo
 
           _this._controller = controller;
           _this._imageCache = ServiceLocator.get(Define.Service.ImageCache);
+          _this._eventBus = ServiceLocator.get(Define.Service.EventBus);
           return _this;
         }
 
@@ -10417,6 +10391,7 @@ System.register("chunks:///_virtual/PlayerDataControl.ts", ['./rollupPluginModLo
             panel.PanelState = EUserState.Waiting;
             panel.resetState();
           });
+          this.tableUI.resetState();
         };
 
         _proto.setCardUserInstantly = function setCardUserInstantly(userID, cardsId) {
@@ -10510,6 +10485,8 @@ System.register("chunks:///_virtual/PlayerDataControl.ts", ['./rollupPluginModLo
 
                     if (info.role) {
                       this.onSetUIRole(id, info.role);
+
+                      this._eventBus.emit(POKER_KEYS.UserStateChanged, this.isViewer(info.role) ? EUserState.Waiting : EUserState.Playing);
                     }
 
                     if (info.allin) {
@@ -10640,6 +10617,10 @@ System.register("chunks:///_virtual/PlayerDataControl.ts", ['./rollupPluginModLo
 
           this.userHUD.setRaiseRange(minRaise, maxRaise);
           this.userHUD.show();
+        };
+
+        _proto.isViewer = function isViewer(role) {
+          return role === "VIEWER";
         };
 
         return PlayerDataControl;
@@ -10818,10 +10799,10 @@ System.register("chunks:///_virtual/PlayerPrefs.ts", ['cc', './LogUtils.ts'], fu
   };
 });
 
-System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseAdapter.ts', './ServiceLocator.ts', './NetworkManager.ts', './Define.ts', './DefinePoker.ts'], function () {
+System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseAdapter.ts', './NetworkManager.ts', './Define.ts', './DefinePoker.ts'], function () {
   'use strict';
 
-  var _inheritsLoose, cclegacy, _decorator, BaseAdapter, ServiceLocator, MESSAGE, MINIGAME_KEYS, DefinePoker, POKER_KEYS;
+  var _inheritsLoose, cclegacy, _decorator, BaseAdapter, MESSAGE, MINIGAME_KEYS, POKER_KEYS;
 
   return {
     setters: [function (module) {
@@ -10832,24 +10813,21 @@ System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabel
     }, function (module) {
       BaseAdapter = module.BaseAdapter;
     }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
       MESSAGE = module.MESSAGE;
     }, function (module) {
       MINIGAME_KEYS = module.MINIGAME_KEYS;
     }, function (module) {
-      DefinePoker = module.DefinePoker;
       POKER_KEYS = module.POKER_KEYS;
     }],
     execute: function () {
-      var _dec, _dec2, _class;
+      var _dec, _class;
 
       cclegacy._RF.push({}, "cfd6dY/8XlFc6f6jza5Tftl", "PokerAdapter", undefined);
 
       var ccclass = _decorator.ccclass,
           property = _decorator.property,
           executionOrder = _decorator.executionOrder;
-      var PokerAdapter = (_dec = ccclass('PokerAdapter'), _dec2 = executionOrder(-2), _dec(_class = _dec2(_class = /*#__PURE__*/function (_BaseAdapter) {
+      var PokerAdapter = (_dec = ccclass('PokerAdapter'), _dec(_class = /*#__PURE__*/function (_BaseAdapter) {
         _inheritsLoose(PokerAdapter, _BaseAdapter);
 
         function PokerAdapter() {
@@ -10863,7 +10841,7 @@ System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabel
           _this.onStartGame = void 0;
           _this.onEndGame = void 0;
           _this.onUserEnter = void 0;
-          _this.onRoomData = void 0;
+          _this.onTableData = void 0;
           _this.onActionResponse = void 0;
           _this.onTurnChange = void 0;
           _this.onLoadPlayerOptions = void 0;
@@ -10873,7 +10851,7 @@ System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabel
           _this.onDealCardToUser = void 0;
           _this.onDealCardOnTable = void 0;
           _this.onPlaceBlind = void 0;
-          _this.onUserExitRoom = void 0;
+          _this.onUserExitTable = void 0;
           _this.onUpdateTablePot = void 0;
           _this.onCheckHandRank = void 0;
 
@@ -10915,14 +10893,14 @@ System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabel
             _this.onGameResult == null ? void 0 : _this.onGameResult(datas);
           };
 
-          _this.onUserEnterRoomResponse = function (data) {
+          _this.onUserEnterTableResponse = function (data) {
             var datas = data.datas;
             _this.onUserEnter == null ? void 0 : _this.onUserEnter(datas);
           };
 
-          _this.onGetRoomDataResponse = function (data) {
+          _this.onGetTableDataResponse = function (data) {
             var datas = data.datas;
-            _this.onRoomData == null ? void 0 : _this.onRoomData(datas);
+            _this.onTableData == null ? void 0 : _this.onTableData(datas);
           };
 
           _this.onLoadPlayerOptionsResponse = function (data) {
@@ -10940,9 +10918,9 @@ System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabel
             _this.onPlaceBlind == null ? void 0 : _this.onPlaceBlind(datas);
           };
 
-          _this.onUserExitRoomResponse = function (data) {
+          _this.onUserExitTableResponse = function (data) {
             var datas = data.datas;
-            _this.onUserExitRoom == null ? void 0 : _this.onUserExitRoom(datas);
+            _this.onUserExitTable == null ? void 0 : _this.onUserExitTable(datas);
           };
 
           _this.onUpdateTablePotResponse = function (data) {
@@ -10960,11 +10938,6 @@ System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabel
 
         var _proto = PokerAdapter.prototype;
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(DefinePoker.Service.Adapter.Poker, this);
-          this.init();
-        };
-
         _proto.init = function init() {
           _BaseAdapter.prototype.init.call(this);
 
@@ -10975,8 +10948,8 @@ System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabel
         _proto.setEvents = function setEvents() {
           this.network.on(MINIGAME_KEYS.StartGame, this.onStartGameResponse);
           this.network.on(MINIGAME_KEYS.EndGame, this.onEndGameResponse);
-          this.network.on(POKER_KEYS.UserEnterRoom, this.onUserEnterRoomResponse);
-          this.network.on(POKER_KEYS.RoomData, this.onGetRoomDataResponse);
+          this.network.on(POKER_KEYS.UserEnterTable, this.onUserEnterTableResponse);
+          this.network.on(POKER_KEYS.TableData, this.onGetTableDataResponse);
           this.network.on(POKER_KEYS.ActionResponse, this.onBetResponse);
           this.network.on(POKER_KEYS.ChangeTurn, this.onTurnChangeResponse);
           this.network.on(POKER_KEYS.PlayerOptions, this.onLoadPlayerOptionsResponse);
@@ -10988,7 +10961,7 @@ System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabel
           this.network.on(POKER_KEYS.DealTurn, this.onDealCardOnTableResponse);
           this.network.on(POKER_KEYS.DealRiver, this.onDealCardOnTableResponse);
           this.network.on(POKER_KEYS.PlaceBlind, this.onPlaceBlindResponse);
-          this.network.on(POKER_KEYS.UserExitRoom, this.onUserExitRoomResponse);
+          this.network.on(POKER_KEYS.UserExitTable, this.onUserExitTableResponse);
           this.network.on(POKER_KEYS.End_Flop, this.onUpdateTablePotResponse);
           this.network.on(POKER_KEYS.End_Preflop, this.onUpdateTablePotResponse);
           this.network.on(POKER_KEYS.End_River, this.onUpdateTablePotResponse);
@@ -10997,12 +10970,11 @@ System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabel
         };
 
         _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(DefinePoker.Service.Adapter.Poker);
           if (!this.network) return;
           this.network.off(MINIGAME_KEYS.StartGame, this.onStartGameResponse);
           this.network.off(MINIGAME_KEYS.EndGame, this.onEndGameResponse);
-          this.network.off(POKER_KEYS.UserEnterRoom, this.onUserEnterRoomResponse);
-          this.network.off(POKER_KEYS.RoomData, this.onGetRoomDataResponse);
+          this.network.off(POKER_KEYS.UserEnterTable, this.onUserEnterTableResponse);
+          this.network.off(POKER_KEYS.TableData, this.onGetTableDataResponse);
           this.network.off(POKER_KEYS.ActionResponse, this.onBetResponse);
           this.network.off(POKER_KEYS.ChangeTurn, this.onTurnChangeResponse);
           this.network.off(POKER_KEYS.PlayerOptions, this.onLoadPlayerOptionsResponse);
@@ -11014,7 +10986,7 @@ System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabel
           this.network.off(POKER_KEYS.DealTurn, this.onDealCardOnTableResponse);
           this.network.off(POKER_KEYS.DealRiver, this.onDealCardOnTableResponse);
           this.network.off(POKER_KEYS.PlaceBlind, this.onPlaceBlindResponse);
-          this.network.off(POKER_KEYS.UserExitRoom, this.onUserExitRoomResponse);
+          this.network.off(POKER_KEYS.UserExitTable, this.onUserExitTableResponse);
           this.network.off(POKER_KEYS.End_Flop, this.onUpdateTablePotResponse);
           this.network.off(POKER_KEYS.End_Preflop, this.onUpdateTablePotResponse);
           this.network.off(POKER_KEYS.End_River, this.onUpdateTablePotResponse);
@@ -11048,7 +11020,7 @@ System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabel
           this.network.send([MESSAGE.ROOM_PLUGIN, zoneName, roomId, message]);
         };
 
-        _proto.requestRoomInfor = function requestRoomInfor(zoneName, roomId) {
+        _proto.requestTableInfor = function requestTableInfor(zoneName, roomId) {
           var message = {
             action: 'room_data',
             requestId: this.getRandomRequestId(),
@@ -11071,7 +11043,7 @@ System.register("chunks:///_virtual/PokerAdapter.ts", ['./rollupPluginModLoBabel
         ;
 
         return PokerAdapter;
-      }(BaseAdapter)) || _class) || _class);
+      }(BaseAdapter)) || _class);
 
       cclegacy._RF.pop();
     }
@@ -11315,10 +11287,10 @@ System.register("chunks:///_virtual/PokerCheat.ts", ['./rollupPluginModLoBabelHe
   };
 });
 
-System.register("chunks:///_virtual/PokerController.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './UIEffectControl.ts', './PlayerDataControl.ts', './ServiceLocator.ts', './DefinePoker.ts', './Define.ts', './PokerTableUI.ts', './UserHUD.ts', './PokerInforPanel.ts', './EResultCode.ts', './EUserOptions.ts', './CardController.ts'], function (exports) {
+System.register("chunks:///_virtual/PokerController.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './CardController.ts', './EResultCode.ts', './Define.ts', './ServiceLocator.ts', './EUserOptions.ts', './PokerTableUI.ts', './PokerInforPanel.ts', './UserHUD.ts', './DefinePoker.ts', './PlayerDataControl.ts', './UIEffectControl.ts'], function (exports) {
   'use strict';
 
-  var _inheritsLoose, _createForOfIteratorHelperLoose, _createClass, cclegacy, _decorator, UIEffectControl, PlayerDataControl, ServiceLocator, DefinePoker, POKER_KEYS, GLOBAL_KEYS, MINIGAME_KEYS, PokerTableUI, UserHUD, EUserState, EResultCode, EUserOptions, CardController;
+  var _inheritsLoose, _createForOfIteratorHelperLoose, _createClass, cclegacy, _decorator, CardController, EResultCode, GLOBAL_KEYS, MINIGAME_KEYS, ServiceLocator, EUserOptions, PokerTableUI, EUserState, UserHUD, DefinePoker, POKER_KEYS, PlayerDataControl, UIEffectControl;
 
   return {
     setters: [function (module) {
@@ -11329,32 +11301,32 @@ System.register("chunks:///_virtual/PokerController.ts", ['./rollupPluginModLoBa
       cclegacy = module.cclegacy;
       _decorator = module._decorator;
     }, function (module) {
-      UIEffectControl = module.UIEffectControl;
+      CardController = module.CardController;
     }, function (module) {
-      PlayerDataControl = module.PlayerDataControl;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
-      DefinePoker = module.DefinePoker;
-      POKER_KEYS = module.POKER_KEYS;
+      EResultCode = module.EResultCode;
     }, function (module) {
       GLOBAL_KEYS = module.GLOBAL_KEYS;
       MINIGAME_KEYS = module.MINIGAME_KEYS;
     }, function (module) {
-      PokerTableUI = module.PokerTableUI;
-    }, function (module) {
-      UserHUD = module.UserHUD;
-    }, function (module) {
-      EUserState = module.EUserState;
-    }, function (module) {
-      EResultCode = module.EResultCode;
+      ServiceLocator = module.ServiceLocator;
     }, function (module) {
       EUserOptions = module.EUserOptions;
     }, function (module) {
-      CardController = module.CardController;
+      PokerTableUI = module.PokerTableUI;
+    }, function (module) {
+      EUserState = module.EUserState;
+    }, function (module) {
+      UserHUD = module.UserHUD;
+    }, function (module) {
+      DefinePoker = module.DefinePoker;
+      POKER_KEYS = module.POKER_KEYS;
+    }, function (module) {
+      PlayerDataControl = module.PlayerDataControl;
+    }, function (module) {
+      UIEffectControl = module.UIEffectControl;
     }],
     execute: function () {
-      var _dec, _dec2, _class;
+      var _dec, _class;
 
       cclegacy._RF.push({}, "1a86eTIGCdOUKxllsWTkwyP", "PokerController", undefined);
 
@@ -11362,7 +11334,7 @@ System.register("chunks:///_virtual/PokerController.ts", ['./rollupPluginModLoBa
           property = _decorator.property,
           executionOrder = _decorator.executionOrder; // control all poker logic
 
-      var PokerController = exports('PokerController', (_dec = ccclass('PokerController'), _dec2 = executionOrder(-1), _dec(_class = _dec2(_class = /*#__PURE__*/function (_CardController) {
+      var PokerController = exports('PokerController', (_dec = ccclass('PokerController'), _dec(_class = /*#__PURE__*/function (_CardController) {
         _inheritsLoose(PokerController, _CardController);
 
         function PokerController() {
@@ -11381,16 +11353,22 @@ System.register("chunks:///_virtual/PokerController.ts", ['./rollupPluginModLoBa
 
         var _proto = PokerController.prototype;
 
-        _proto.subcribeController = function subcribeController() {
-          ServiceLocator.register(DefinePoker.Service.PokerController, this);
+        _proto.init = function init() {
+          this._pokerAdapter = ServiceLocator.get(DefinePoker.Service.Adapter.Poker);
+
+          _CardController.prototype.init.call(this);
         };
 
-        _proto.unsubcribeController = function unsubcribeController() {
-          ServiceLocator.unregister(DefinePoker.Service.PokerController);
+        _proto.onLoad = function onLoad() {
+          _CardController.prototype.onLoad.call(this);
+
+          this._uiEffectControl = new UIEffectControl(this.minigameUI);
+          this._actionDataControl = new PlayerDataControl(this, this.minigameUI);
+          this.minigameUI.get(PokerTableUI).onSetUIRoomInfor(this._roomInfor.roomId.toString());
+          this.requestRoomInfor();
         };
 
         _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(DefinePoker.Service.PokerModel);
           this.eventBus.off(GLOBAL_KEYS.Deposit, this.onDeposit, this); // game.off(Game.EVENT_SHOW, this.requestRoomInfor, this);
           // game.off(Game.EVENT_HIDE, this.noti, this);
 
@@ -11400,27 +11378,15 @@ System.register("chunks:///_virtual/PokerController.ts", ['./rollupPluginModLoBa
           this._pokerAdapter.onDealCardOnTable = null;
           this._pokerAdapter.onActionResponse = null;
           this._pokerAdapter.onUserEnter = null;
-          this._pokerAdapter.onRoomData = null;
+          this._pokerAdapter.onTableData = null;
           this._pokerAdapter.onRevealCard = null;
           this._pokerAdapter.onRevealAllCards = null;
           this._pokerAdapter.onPlaceBlind = null;
-          this._pokerAdapter.onUserExitRoom = null;
+          this._pokerAdapter.onUserExitTable = null;
           this._pokerAdapter.onTurnChange = null;
           this._pokerAdapter.onLoadPlayerOptions = null;
           this._pokerAdapter.onGameResult = null;
           this._pokerAdapter.onUpdateTablePot = null;
-        };
-
-        _proto.init = function init(pokerUI) {
-          this._pokerAdapter = ServiceLocator.get(DefinePoker.Service.Adapter.Poker);
-
-          _CardController.prototype.init.call(this, pokerUI);
-
-          this._uiEffectControl = new UIEffectControl(this.minigameUI);
-          this._actionDataControl = new PlayerDataControl(this, this.minigameUI);
-          this.minigameUI.get(PokerTableUI).onSetUIRoomInfor(this._roomInfor.roomId.toString());
-          this.setEvents();
-          this.requestRoomInfor();
         };
 
         _proto.setEvents = function setEvents() {
@@ -11430,11 +11396,11 @@ System.register("chunks:///_virtual/PokerController.ts", ['./rollupPluginModLoBa
           this._pokerAdapter.onDealCardOnTable = this.onDealCardOnTable.bind(this);
           this._pokerAdapter.onActionResponse = this.onBetResponse.bind(this);
           this._pokerAdapter.onUserEnter = this.onUserEnterResponse.bind(this);
-          this._pokerAdapter.onRoomData = this.onGetRoomDataResponse.bind(this);
+          this._pokerAdapter.onTableData = this.onGetRoomDataResponse.bind(this);
           this._pokerAdapter.onRevealCard = this.onRevealCard.bind(this);
           this._pokerAdapter.onRevealAllCards = this.onRevealAllCards.bind(this);
           this._pokerAdapter.onPlaceBlind = this.onPlaceBlind.bind(this);
-          this._pokerAdapter.onUserExitRoom = this.onUserExitRoom.bind(this);
+          this._pokerAdapter.onUserExitTable = this.onUserExitRoom.bind(this);
           this._pokerAdapter.onTurnChange = this.onChangeTurn.bind(this);
           this._pokerAdapter.onLoadPlayerOptions = this.onLoadPlayerOptions.bind(this);
           this._pokerAdapter.onGameResult = this.onGameResult.bind(this);
@@ -11453,7 +11419,7 @@ System.register("chunks:///_virtual/PokerController.ts", ['./rollupPluginModLoBa
         };
 
         _proto.requestRoomInfor = function requestRoomInfor() {
-          this._pokerAdapter.requestRoomInfor(this.sessionManager.CurrentZone, this._roomInfor.roomId);
+          this._pokerAdapter.requestTableInfor(this.sessionManager.CurrentZone, this._roomInfor.roomId);
         };
 
         _proto.sendUserAction = function sendUserAction(action, raiseValue) {
@@ -11690,7 +11656,7 @@ System.register("chunks:///_virtual/PokerController.ts", ['./rollupPluginModLoBa
         }]);
 
         return PokerController;
-      }(CardController)) || _class) || _class));
+      }(CardController)) || _class));
 
       cclegacy._RF.pop();
     }
@@ -11716,7 +11682,7 @@ System.register("chunks:///_virtual/pokerData.ts", ['cc'], function () {
 System.register("chunks:///_virtual/PokerDepositLayer.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ServiceLocator.ts', './ButtonUtils.ts', './Define.ts', './DefinePoker.ts', './MiniUI.ts', './AudioHelper.ts', './EUIGame.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, Button, ServiceLocator, ButtonUtils, Define, DefinePoker, MiniUI, AudioHelper, EUIGame;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, Button, ServiceLocator, ButtonUtils, Define, DefinePoker, MiniUI, AudioHelper, EUIGame;
 
   return {
     setters: [function (module) {
@@ -11724,6 +11690,8 @@ System.register("chunks:///_virtual/PokerDepositLayer.ts", ['./rollupPluginModLo
       _inheritsLoose = module.inheritsLoose;
       _initializerDefineProperty = module.initializerDefineProperty;
       _assertThisInitialized = module.assertThisInitialized;
+      _asyncToGenerator = module.asyncToGenerator;
+      _regeneratorRuntime = module.regeneratorRuntime;
     }, function (module) {
       cclegacy = module.cclegacy;
       _decorator = module._decorator;
@@ -11788,17 +11756,39 @@ System.register("chunks:///_virtual/PokerDepositLayer.ts", ['./rollupPluginModLo
           }
         };
 
-        _proto.onShowDeposit = function onShowDeposit() {
-          var _this2 = this;
+        _proto.onShowDeposit = /*#__PURE__*/function () {
+          var _onShowDeposit = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+            var _this2 = this;
 
-          AudioHelper.playClickSound();
+            var uiDeposit;
+            return _regeneratorRuntime().wrap(function _callee$(_context) {
+              while (1) {
+                switch (_context.prev = _context.next) {
+                  case 0:
+                    AudioHelper.playClickSound();
+                    _context.next = 3;
+                    return this._uimanager.showAsync(EUIGame.Popup_Deposit);
 
-          var uiDeposit = this._uimanager.show(EUIGame.Popup_Deposit);
+                  case 3:
+                    uiDeposit = _context.sent;
+                    uiDeposit.setCallback(function (amount) {
+                      _this2._pokerController.deposit(amount);
+                    });
 
-          uiDeposit.setCallback(function (amount) {
-            _this2._pokerController.deposit(amount);
-          });
-        };
+                  case 5:
+                  case "end":
+                    return _context.stop();
+                }
+              }
+            }, _callee, this);
+          }));
+
+          function onShowDeposit() {
+            return _onShowDeposit.apply(this, arguments);
+          }
+
+          return onShowDeposit;
+        }();
 
         return PokerDepositLayer;
       }(MiniUI), _descriptor = _applyDecoratedDescriptor(_class2.prototype, "_btnDeposit", [_dec2], {
@@ -12866,10 +12856,10 @@ System.register("chunks:///_virtual/PokerInforPanel.ts", ['./rollupPluginModLoBa
   };
 });
 
-System.register("chunks:///_virtual/PokerLobbyAdapter.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ServiceLocator.ts', './BaseAdapter.ts', './NetworkManager.ts', './DefinePoker.ts'], function (exports) {
+System.register("chunks:///_virtual/PokerLobbyAdapter.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseAdapter.ts', './NetworkManager.ts', './DefinePoker.ts'], function (exports) {
   'use strict';
 
-  var _inheritsLoose, cclegacy, _decorator, ServiceLocator, BaseAdapter, MESSAGE, DefinePoker, POKER_LOBBY_KEYS;
+  var _inheritsLoose, cclegacy, _decorator, BaseAdapter, MESSAGE, POKER_LOBBY_KEYS;
 
   return {
     setters: [function (module) {
@@ -12878,24 +12868,21 @@ System.register("chunks:///_virtual/PokerLobbyAdapter.ts", ['./rollupPluginModLo
       cclegacy = module.cclegacy;
       _decorator = module._decorator;
     }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
       BaseAdapter = module.BaseAdapter;
     }, function (module) {
       MESSAGE = module.MESSAGE;
     }, function (module) {
-      DefinePoker = module.DefinePoker;
       POKER_LOBBY_KEYS = module.POKER_LOBBY_KEYS;
     }],
     execute: function () {
-      var _dec, _dec2, _class;
+      var _dec, _class;
 
       cclegacy._RF.push({}, "391b7Xy/CNEtLw7/uGzxHIR", "PokerLobbyAdapter", undefined);
 
       var ccclass = _decorator.ccclass,
           property = _decorator.property,
           executionOrder = _decorator.executionOrder;
-      var PokerLobbyAdapter = exports('PokerLobbyAdapter', (_dec = ccclass('PokerLobbyAdapter'), _dec2 = executionOrder(-2), _dec(_class = _dec2(_class = /*#__PURE__*/function (_BaseAdapter) {
+      var PokerLobbyAdapter = exports('PokerLobbyAdapter', (_dec = ccclass('PokerLobbyAdapter'), _dec(_class = /*#__PURE__*/function (_BaseAdapter) {
         _inheritsLoose(PokerLobbyAdapter, _BaseAdapter);
 
         function PokerLobbyAdapter() {
@@ -12918,21 +12905,15 @@ System.register("chunks:///_virtual/PokerLobbyAdapter.ts", ['./rollupPluginModLo
 
         var _proto = PokerLobbyAdapter.prototype;
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(DefinePoker.Service.Adapter.PokerLobby, this);
-          this.init();
-        };
-
         _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(DefinePoker.Service.Adapter.PokerLobby);
           if (!this.network) return;
-          this.network.off(POKER_LOBBY_KEYS.GetRooms, this.onGetRoomsTypeResponse);
+          this.network.off(POKER_LOBBY_KEYS.GetTables, this.onGetRoomsTypeResponse);
         };
 
         _proto.init = function init() {
           _BaseAdapter.prototype.init.call(this);
 
-          this.network.on(POKER_LOBBY_KEYS.GetRooms, this.onGetRoomsTypeResponse);
+          this.network.on(POKER_LOBBY_KEYS.GetTables, this.onGetRoomsTypeResponse);
         };
 
         _proto.getRooms = function getRooms(zoneName, pluginName) {
@@ -12945,17 +12926,17 @@ System.register("chunks:///_virtual/PokerLobbyAdapter.ts", ['./rollupPluginModLo
         };
 
         return PokerLobbyAdapter;
-      }(BaseAdapter)) || _class) || _class));
+      }(BaseAdapter)) || _class));
 
       cclegacy._RF.pop();
     }
   };
 });
 
-System.register("chunks:///_virtual/PokerLobbyController.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ServiceLocator.ts', './Define.ts', './DefinePoker.ts', './RoomConfig.ts'], function (exports) {
+System.register("chunks:///_virtual/PokerLobbyController.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './Define.ts', './ServiceLocator.ts', './RoomConfig.ts', './DefinePoker.ts'], function (exports) {
   'use strict';
 
-  var _inheritsLoose, cclegacy, _decorator, Component, ServiceLocator, Define, DefinePoker, EMiniGameType;
+  var _inheritsLoose, cclegacy, _decorator, Component, Define, ServiceLocator, EMiniGameType, DefinePoker;
 
   return {
     setters: [function (module) {
@@ -12965,23 +12946,23 @@ System.register("chunks:///_virtual/PokerLobbyController.ts", ['./rollupPluginMo
       _decorator = module._decorator;
       Component = module.Component;
     }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
       Define = module.Define;
     }, function (module) {
-      DefinePoker = module.DefinePoker;
+      ServiceLocator = module.ServiceLocator;
     }, function (module) {
       EMiniGameType = module.EMiniGameType;
+    }, function (module) {
+      DefinePoker = module.DefinePoker;
     }],
     execute: function () {
-      var _dec, _dec2, _class;
+      var _dec, _class;
 
       cclegacy._RF.push({}, "87a77HBqIJNqZn4wihNzomj", "PokerLobbyController", undefined);
 
       var ccclass = _decorator.ccclass,
           property = _decorator.property,
           executionOrder = _decorator.executionOrder;
-      var PokerLobbyController = exports('PokerLobbyController', (_dec = ccclass('PokerLobbyController'), _dec2 = executionOrder(-1), _dec(_class = _dec2(_class = /*#__PURE__*/function (_Component) {
+      var PokerLobbyController = exports('PokerLobbyController', (_dec = ccclass('PokerLobbyController'), _dec(_class = /*#__PURE__*/function (_Component) {
         _inheritsLoose(PokerLobbyController, _Component);
 
         function PokerLobbyController() {
@@ -12995,18 +12976,22 @@ System.register("chunks:///_virtual/PokerLobbyController.ts", ['./rollupPluginMo
           _this._plugin = "pokerGame";
           _this._pokerLobbyAdapter = null;
           _this._session = null;
+          _this._roomConfig = null;
           _this._onGetRoomsSuccess = void 0;
           return _this;
         }
 
         var _proto = PokerLobbyController.prototype;
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(DefinePoker.Service.PokerLobbyController, this);
-          var roomConfig = ServiceLocator.get(Define.Service.RoomConfig);
+        _proto.init = function init() {
+          this._roomConfig = ServiceLocator.get(Define.Service.RoomConfig);
           this._session = ServiceLocator.get(Define.Service.SessionManager);
           this._pokerLobbyAdapter = ServiceLocator.get(DefinePoker.Service.Adapter.PokerLobby);
-          var roomData = roomConfig.getRoomDataByType(EMiniGameType.Poker);
+        };
+
+        _proto.onLoad = function onLoad() {
+          var roomData = this._roomConfig.getRoomDataByType(EMiniGameType.Poker);
+
           this._plugin = roomData.PluginName;
 
           this._session.setPlugin(roomData.PluginName);
@@ -13015,7 +13000,6 @@ System.register("chunks:///_virtual/PokerLobbyController.ts", ['./rollupPluginMo
         };
 
         _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(DefinePoker.Service.PokerLobbyController);
           this._pokerLobbyAdapter.getRooms = null;
         };
 
@@ -13036,7 +13020,7 @@ System.register("chunks:///_virtual/PokerLobbyController.ts", ['./rollupPluginMo
         };
 
         return PokerLobbyController;
-      }(Component)) || _class) || _class));
+      }(Component)) || _class));
 
       cclegacy._RF.pop();
     }
@@ -13120,10 +13104,6 @@ System.register("chunks:///_virtual/PokerManager.ts", ['./rollupPluginModLoBabel
           console.warn('On first init game when created');
 
           this._pokerUI.init();
-
-          {
-            this._pokerController.init(this._pokerUI);
-          }
         };
 
         _proto.startGame = function startGame() {
@@ -14047,10 +14027,10 @@ System.register("chunks:///_virtual/PoolHelper.ts", ['./rollupPluginModLoBabelHe
   };
 });
 
-System.register("chunks:///_virtual/PoolManager.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ServiceLocator.ts', './Define.ts', './LogUtils.ts', './ResourcesUtils.ts'], function () {
+System.register("chunks:///_virtual/PoolManager.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './LogUtils.ts', './ResourcesUtils.ts'], function () {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, instantiate, NodePool, Component, Prefab, ServiceLocator, Define, LogUtils, ResourceUtils;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, instantiate, NodePool, Component, Prefab, LogUtils, ResourceUtils;
 
   return {
     setters: [function (module) {
@@ -14067,10 +14047,6 @@ System.register("chunks:///_virtual/PoolManager.ts", ['./rollupPluginModLoBabelH
       NodePool = module.NodePool;
       Component = module.Component;
       Prefab = module.Prefab;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
-      Define = module.Define;
     }, function (module) {
       LogUtils = module.LogUtils;
     }, function (module) {
@@ -14106,13 +14082,7 @@ System.register("chunks:///_virtual/PoolManager.ts", ['./rollupPluginModLoBabelH
 
         var _proto = PoolManager.prototype;
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.PoolManager, this);
-        };
-
-        _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(Define.Service.PoolManager);
-        };
+        _proto.init = function init() {};
 
         _proto.loadData = /*#__PURE__*/function () {
           var _loadData = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -14213,6 +14183,109 @@ System.register("chunks:///_virtual/PoolManager.ts", ['./rollupPluginModLoBabelH
           return "";
         }
       }), _class2)) || _class);
+
+      cclegacy._RF.pop();
+    }
+  };
+});
+
+System.register("chunks:///_virtual/PopupBase.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './GameUI.ts', './Tweener.ts', './ETween.ts'], function (exports) {
+  'use strict';
+
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, Sprite, Node, v3, Vec3, GameUI, Tweener, ETweenEasing;
+
+  return {
+    setters: [function (module) {
+      _applyDecoratedDescriptor = module.applyDecoratedDescriptor;
+      _inheritsLoose = module.inheritsLoose;
+      _initializerDefineProperty = module.initializerDefineProperty;
+      _assertThisInitialized = module.assertThisInitialized;
+    }, function (module) {
+      cclegacy = module.cclegacy;
+      _decorator = module._decorator;
+      Sprite = module.Sprite;
+      Node = module.Node;
+      v3 = module.v3;
+      Vec3 = module.Vec3;
+    }, function (module) {
+      GameUI = module.GameUI;
+    }, function (module) {
+      Tweener = module.Tweener;
+    }, function (module) {
+      ETweenEasing = module.ETweenEasing;
+    }],
+    execute: function () {
+      var _dec, _dec2, _dec3, _class, _class2, _descriptor, _descriptor2;
+
+      cclegacy._RF.push({}, "aa204VZLGxPzL0eo1L6ZRY7", "PopupBase", undefined);
+
+      var ccclass = _decorator.ccclass,
+          property = _decorator.property;
+      var PopupBase = exports('PopupBase', (_dec = ccclass('PopupBase'), _dec2 = property({
+        type: Sprite,
+        visible: true
+      }), _dec3 = property({
+        type: Node,
+        visible: true
+      }), _dec(_class = (_class2 = /*#__PURE__*/function (_GameUI) {
+        _inheritsLoose(PopupBase, _GameUI);
+
+        function PopupBase() {
+          var _this;
+
+          for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+          }
+
+          _this = _GameUI.call.apply(_GameUI, [this].concat(args)) || this;
+
+          _initializerDefineProperty(_this, "background", _descriptor, _assertThisInitialized(_this));
+
+          _initializerDefineProperty(_this, "panelUI", _descriptor2, _assertThisInitialized(_this));
+
+          return _this;
+        }
+
+        var _proto = PopupBase.prototype;
+
+        _proto.playAppearAnimation = function playAppearAnimation(background, panel) {
+          Tweener.Transparency({
+            uiRenderer: background,
+            startAlpha: 0,
+            endAlpha: 230,
+            duration: 0.3
+          });
+          Tweener.LocalScale({
+            target: panel,
+            start: v3(1.1, 1.1, 1.1),
+            end: Vec3.ONE,
+            duration: 0.3,
+            easingType: ETweenEasing.BackOut
+          });
+        };
+
+        _proto.onShow = function onShow() {
+          _GameUI.prototype.onShow.call(this);
+
+          this.playAppearAnimation(this.background, this.panelUI);
+        };
+
+        return PopupBase;
+      }(GameUI), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "background", [_dec2], {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        initializer: function initializer() {
+          return null;
+        }
+      }), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, "panelUI", [_dec3], {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        initializer: function initializer() {
+          return null;
+        }
+      })), _class2)) || _class));
 
       cclegacy._RF.pop();
     }
@@ -14554,10 +14627,10 @@ System.register("chunks:///_virtual/RoleAssigner.ts", ['./rollupPluginModLoBabel
   };
 });
 
-System.register("chunks:///_virtual/RoomConfig.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ServiceLocator.ts', './Define.ts'], function (exports) {
+System.register("chunks:///_virtual/RoomConfig.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _initializerDefineProperty, _inheritsLoose, _assertThisInitialized, _createForOfIteratorHelperLoose, cclegacy, _decorator, Enum, Component, ServiceLocator, Define;
+  var _applyDecoratedDescriptor, _initializerDefineProperty, _inheritsLoose, _assertThisInitialized, _createForOfIteratorHelperLoose, cclegacy, _decorator, Enum, Component;
 
   return {
     setters: [function (module) {
@@ -14571,10 +14644,6 @@ System.register("chunks:///_virtual/RoomConfig.ts", ['./rollupPluginModLoBabelHe
       _decorator = module._decorator;
       Enum = module.Enum;
       Component = module.Component;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
-      Define = module.Define;
     }],
     execute: function () {
       exports('EMiniGameType', void 0);
@@ -14661,13 +14730,7 @@ System.register("chunks:///_virtual/RoomConfig.ts", ['./rollupPluginModLoBabelHe
 
         var _proto = RoomConfig.prototype;
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.RoomConfig, this);
-        };
-
-        _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(Define.Service.RoomConfig);
-        };
+        _proto.init = function init() {};
 
         _proto.getRoomDataByID = function getRoomDataByID(roomId) {
           for (var _iterator = _createForOfIteratorHelperLoose(this._roomDatas), _step; !(_step = _iterator()).done;) {
@@ -15440,13 +15503,14 @@ System.register("chunks:///_virtual/ServiceInstaller.ts", ['./rollupPluginModLoB
       ServiceLocator = module.ServiceLocator;
     }],
     execute: function () {
-      var _dec, _dec2, _class, _class2, _descriptor;
+      var _dec, _dec2, _dec3, _class, _class2, _descriptor;
 
       cclegacy._RF.push({}, "cdc50uSoc9OUqnxH9BEftga", "ServiceInstaller", undefined);
 
       var ccclass = _decorator.ccclass,
-          property = _decorator.property;
-      var ServiceInstaller = (_dec = ccclass('ServiceInstaller'), _dec2 = property([Component]), _dec(_class = (_class2 = /*#__PURE__*/function (_Component) {
+          property = _decorator.property,
+          executionOrder = _decorator.executionOrder;
+      var ServiceInstaller = (_dec = ccclass('ServiceInstaller'), _dec2 = executionOrder(-100), _dec3 = property([Component]), _dec(_class = _dec2(_class = (_class2 = /*#__PURE__*/function (_Component) {
         _inheritsLoose(ServiceInstaller, _Component);
 
         function ServiceInstaller() {
@@ -15474,7 +15538,12 @@ System.register("chunks:///_virtual/ServiceInstaller.ts", ['./rollupPluginModLoB
               key = js.getClassName(service);
             }
 
-            ServiceLocator.register(key, service);
+            var sv = service;
+            ServiceLocator.register(key, sv);
+          });
+          this.services.forEach(function (service) {
+            var sv = service;
+            sv.init();
           });
         };
 
@@ -15487,14 +15556,14 @@ System.register("chunks:///_virtual/ServiceInstaller.ts", ['./rollupPluginModLoB
         };
 
         return ServiceInstaller;
-      }(Component), _descriptor = _applyDecoratedDescriptor(_class2.prototype, "services", [_dec2], {
+      }(Component), _descriptor = _applyDecoratedDescriptor(_class2.prototype, "services", [_dec3], {
         configurable: true,
         enumerable: true,
         writable: true,
         initializer: function initializer() {
           return [];
         }
-      }), _class2)) || _class);
+      }), _class2)) || _class) || _class);
 
       cclegacy._RF.pop();
     }
@@ -15578,10 +15647,10 @@ System.register("chunks:///_virtual/ServiceLocator.ts", ['cc', './LogUtils.ts'],
   };
 });
 
-System.register("chunks:///_virtual/SessionManager.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ServiceLocator.ts', './Define.ts', './LogUtils.ts'], function () {
+System.register("chunks:///_virtual/SessionManager.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './LogUtils.ts'], function () {
   'use strict';
 
-  var _inheritsLoose, _createClass, cclegacy, _decorator, Component, ServiceLocator, Define, LogUtils;
+  var _inheritsLoose, _createClass, cclegacy, _decorator, Component, LogUtils;
 
   return {
     setters: [function (module) {
@@ -15591,10 +15660,6 @@ System.register("chunks:///_virtual/SessionManager.ts", ['./rollupPluginModLoBab
       cclegacy = module.cclegacy;
       _decorator = module._decorator;
       Component = module.Component;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
-      Define = module.Define;
     }, function (module) {
       LogUtils = module.LogUtils;
     }],
@@ -15624,13 +15689,7 @@ System.register("chunks:///_virtual/SessionManager.ts", ['./rollupPluginModLoBab
 
         var _proto = SessionManager.prototype;
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.SessionManager, this);
-        };
-
-        _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(Define.Service.SessionManager);
-        };
+        _proto.init = function init() {};
 
         _proto.setZone = function setZone(zoneName) {
           this._zoneName = zoneName;
@@ -18733,10 +18792,10 @@ System.register("chunks:///_virtual/UIDealer.ts", ['./rollupPluginModLoBabelHelp
   };
 });
 
-System.register("chunks:///_virtual/UIDeposit.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ButtonUtils.ts', './GameUI.ts', './AudioHelper.ts'], function (exports) {
+System.register("chunks:///_virtual/UIDeposit.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ButtonUtils.ts', './PopupBase.ts', './AudioHelper.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, EditBox, Button, ButtonUtils, GameUI, AudioHelper;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, EditBox, Button, ButtonUtils, PopupBase, AudioHelper;
 
   return {
     setters: [function (module) {
@@ -18752,7 +18811,7 @@ System.register("chunks:///_virtual/UIDeposit.ts", ['./rollupPluginModLoBabelHel
     }, function (module) {
       ButtonUtils = module.ButtonUtils;
     }, function (module) {
-      GameUI = module.GameUI;
+      PopupBase = module.PopupBase;
     }, function (module) {
       AudioHelper = module.AudioHelper;
     }],
@@ -18772,8 +18831,8 @@ System.register("chunks:///_virtual/UIDeposit.ts", ['./rollupPluginModLoBabelHel
       }), _dec4 = property({
         type: Button,
         visible: true
-      }), _dec(_class = (_class2 = /*#__PURE__*/function (_GameUI) {
-        _inheritsLoose(UIDeposit, _GameUI);
+      }), _dec(_class = (_class2 = /*#__PURE__*/function (_PopupBase) {
+        _inheritsLoose(UIDeposit, _PopupBase);
 
         function UIDeposit() {
           var _this;
@@ -18782,7 +18841,7 @@ System.register("chunks:///_virtual/UIDeposit.ts", ['./rollupPluginModLoBabelHel
             args[_key] = arguments[_key];
           }
 
-          _this = _GameUI.call.apply(_GameUI, [this].concat(args)) || this;
+          _this = _PopupBase.call.apply(_PopupBase, [this].concat(args)) || this;
 
           _initializerDefineProperty(_this, "_depositField", _descriptor, _assertThisInitialized(_this));
 
@@ -18840,7 +18899,7 @@ System.register("chunks:///_virtual/UIDeposit.ts", ['./rollupPluginModLoBabelHel
         };
 
         return UIDeposit;
-      }(GameUI), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_depositField", [_dec2], {
+      }(PopupBase), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_depositField", [_dec2], {
         configurable: true,
         enumerable: true,
         writable: true,
@@ -19338,7 +19397,7 @@ System.register("chunks:///_virtual/UIGamemenu.ts", ['./rollupPluginModLoBabelHe
       EUIGame = module.EUIGame;
     }],
     execute: function () {
-      var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10, _descriptor11;
+      var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10, _descriptor11, _descriptor12;
 
       cclegacy._RF.push({}, "24660c1ujVBJ7Thy+79xbDc", "UIGamemenu", undefined);
 
@@ -19348,7 +19407,7 @@ System.register("chunks:///_virtual/UIGamemenu.ts", ['./rollupPluginModLoBabelHe
         visible: true,
         displayName: '== Button Settings ==',
         readonly: true
-      }), _dec6 = property(Button), _dec7 = property(Button), _dec8 = property(Button), _dec9 = property(Button), _dec10 = property(Button), _dec11 = property(Button), _dec12 = property({
+      }), _dec6 = property(Button), _dec7 = property(Button), _dec8 = property(Button), _dec9 = property(Button), _dec10 = property(Button), _dec11 = property(Button), _dec12 = property(Button), _dec13 = property({
         type: Node,
         visible: function visible() {
           return DEBUG;
@@ -19385,7 +19444,9 @@ System.register("chunks:///_virtual/UIGamemenu.ts", ['./rollupPluginModLoBabelHe
 
           _initializerDefineProperty(_this, "btnDeposit", _descriptor10, _assertThisInitialized(_this));
 
-          _initializerDefineProperty(_this, "version", _descriptor11, _assertThisInitialized(_this));
+          _initializerDefineProperty(_this, "btnLogout", _descriptor11, _assertThisInitialized(_this));
+
+          _initializerDefineProperty(_this, "version", _descriptor12, _assertThisInitialized(_this));
 
           _this._imageCache = null;
           _this._userProfile = null;
@@ -19406,6 +19467,7 @@ System.register("chunks:///_virtual/UIGamemenu.ts", ['./rollupPluginModLoBabelHe
           ButtonUtils.bind(this.btnLeaderboard, this.onShowLeaderboard, this);
           ButtonUtils.bind(this.btnWheel, this.onShowWheel, this);
           ButtonUtils.bind(this.btnDeposit, this.onShowDepositPopup, this);
+          ButtonUtils.bind(this.btnLogout, this.onLogout, this);
           this.eventBus.on(GLOBAL_KEYS.Deposit, this.onDeposit, this);
           this.loadData();
         };
@@ -19417,6 +19479,7 @@ System.register("chunks:///_virtual/UIGamemenu.ts", ['./rollupPluginModLoBabelHe
           ButtonUtils.unbind(this.btnLeaderboard, this.onShowLeaderboard, this);
           ButtonUtils.unbind(this.btnWheel, this.onShowWheel, this);
           ButtonUtils.unbind(this.btnDeposit, this.onShowDepositPopup, this);
+          ButtonUtils.unbind(this.btnLogout, this.onLogout, this);
           this.eventBus.off(GLOBAL_KEYS.Deposit, this.onDeposit, this);
         };
 
@@ -19492,18 +19555,46 @@ System.register("chunks:///_virtual/UIGamemenu.ts", ['./rollupPluginModLoBabelHe
           this.uiManager.show(EUIGame.Popup_Wheel);
         };
 
-        _proto.onShowDepositPopup = function onShowDepositPopup() {
-          var _this2 = this;
+        _proto.onShowDepositPopup = /*#__PURE__*/function () {
+          var _onShowDepositPopup = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+            var _this2 = this;
 
-          AudioHelper.playClickSound();
-          var uiDeposit = this.uiManager.show(EUIGame.Popup_Deposit);
-          uiDeposit.setCallback(function (amount) {
-            _this2.gameController.deposit(amount);
-          });
-        };
+            var uiDeposit;
+            return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+              while (1) {
+                switch (_context2.prev = _context2.next) {
+                  case 0:
+                    AudioHelper.playClickSound();
+                    _context2.next = 3;
+                    return this.uiManager.showAsync(EUIGame.Popup_Deposit);
+
+                  case 3:
+                    uiDeposit = _context2.sent;
+                    uiDeposit.setCallback(function (amount) {
+                      _this2.gameController.deposit(amount);
+                    });
+
+                  case 5:
+                  case "end":
+                    return _context2.stop();
+                }
+              }
+            }, _callee2, this);
+          }));
+
+          function onShowDepositPopup() {
+            return _onShowDepositPopup.apply(this, arguments);
+          }
+
+          return onShowDepositPopup;
+        }();
 
         _proto.onResetDragButton = function onResetDragButton() {
           this.btnWheel.getComponent(Drag).resetPosition();
+        };
+
+        _proto.onLogout = function onLogout() {
+          this.gameController.logout();
         };
 
         return UIGamemenu;
@@ -19577,7 +19668,14 @@ System.register("chunks:///_virtual/UIGamemenu.ts", ['./rollupPluginModLoBabelHe
         initializer: function initializer() {
           return null;
         }
-      }), _descriptor11 = _applyDecoratedDescriptor(_class2.prototype, "version", [_dec12], {
+      }), _descriptor11 = _applyDecoratedDescriptor(_class2.prototype, "btnLogout", [_dec12], {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        initializer: function initializer() {
+          return null;
+        }
+      }), _descriptor12 = _applyDecoratedDescriptor(_class2.prototype, "version", [_dec13], {
         configurable: true,
         enumerable: true,
         writable: true,
@@ -19591,10 +19689,10 @@ System.register("chunks:///_virtual/UIGamemenu.ts", ['./rollupPluginModLoBabelHe
   };
 });
 
-System.register("chunks:///_virtual/UIJoinRoom.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ButtonUtils.ts', './GameUI.ts', './AudioHelper.ts'], function (exports) {
+System.register("chunks:///_virtual/UIJoinRoom.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ButtonUtils.ts', './PopupBase.ts', './AudioHelper.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, EditBox, Button, ButtonUtils, GameUI, AudioHelper;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, EditBox, Button, ButtonUtils, PopupBase, AudioHelper;
 
   return {
     setters: [function (module) {
@@ -19610,7 +19708,7 @@ System.register("chunks:///_virtual/UIJoinRoom.ts", ['./rollupPluginModLoBabelHe
     }, function (module) {
       ButtonUtils = module.ButtonUtils;
     }, function (module) {
-      GameUI = module.GameUI;
+      PopupBase = module.PopupBase;
     }, function (module) {
       AudioHelper = module.AudioHelper;
     }],
@@ -19630,8 +19728,8 @@ System.register("chunks:///_virtual/UIJoinRoom.ts", ['./rollupPluginModLoBabelHe
       }), _dec4 = property({
         type: Button,
         visible: true
-      }), _dec(_class = (_class2 = /*#__PURE__*/function (_GameUI) {
-        _inheritsLoose(UIJoinRoom, _GameUI);
+      }), _dec(_class = (_class2 = /*#__PURE__*/function (_PopupBase) {
+        _inheritsLoose(UIJoinRoom, _PopupBase);
 
         function UIJoinRoom() {
           var _this;
@@ -19640,7 +19738,7 @@ System.register("chunks:///_virtual/UIJoinRoom.ts", ['./rollupPluginModLoBabelHe
             args[_key] = arguments[_key];
           }
 
-          _this = _GameUI.call.apply(_GameUI, [this].concat(args)) || this;
+          _this = _PopupBase.call.apply(_PopupBase, [this].concat(args)) || this;
 
           _initializerDefineProperty(_this, "_roomIdField", _descriptor, _assertThisInitialized(_this));
 
@@ -19654,12 +19752,6 @@ System.register("chunks:///_virtual/UIJoinRoom.ts", ['./rollupPluginModLoBabelHe
         }
 
         var _proto = UIJoinRoom.prototype;
-
-        _proto.init = function init() {
-          _GameUI.prototype.init.call(this);
-
-          this.hide();
-        };
 
         _proto.onEnable = function onEnable() {
           ButtonUtils.bind(this._btnGo, this.onClickGo, this);
@@ -19698,7 +19790,7 @@ System.register("chunks:///_virtual/UIJoinRoom.ts", ['./rollupPluginModLoBabelHe
         };
 
         return UIJoinRoom;
-      }(GameUI), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_roomIdField", [_dec2], {
+      }(PopupBase), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_roomIdField", [_dec2], {
         configurable: true,
         enumerable: true,
         writable: true,
@@ -19726,10 +19818,10 @@ System.register("chunks:///_virtual/UIJoinRoom.ts", ['./rollupPluginModLoBabelHe
   };
 });
 
-System.register("chunks:///_virtual/UILeaderboard.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './UIPlayerCard.ts', './ButtonUtils.ts', './DowloadHandler.ts', './GameUI.ts', './AudioHelper.ts', './EUIGame.ts'], function (exports) {
+System.register("chunks:///_virtual/UILeaderboard.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './UIPlayerCard.ts', './ButtonUtils.ts', './DowloadHandler.ts', './AudioHelper.ts', './EUIGame.ts', './PopupBase.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _createForOfIteratorHelperLoose, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, Prefab, Node, Button, ScrollView, Layout, UITransform, UIPlayerCard, ButtonUtils, DowloadHandler, GameUI, AudioHelper, EUIGame;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _createForOfIteratorHelperLoose, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, Prefab, Node, Button, ScrollView, Layout, UITransform, UIPlayerCard, ButtonUtils, DowloadHandler, AudioHelper, EUIGame, PopupBase;
 
   return {
     setters: [function (module) {
@@ -19756,11 +19848,11 @@ System.register("chunks:///_virtual/UILeaderboard.ts", ['./rollupPluginModLoBabe
     }, function (module) {
       DowloadHandler = module.DowloadHandler;
     }, function (module) {
-      GameUI = module.GameUI;
-    }, function (module) {
       AudioHelper = module.AudioHelper;
     }, function (module) {
       EUIGame = module.EUIGame;
+    }, function (module) {
+      PopupBase = module.PopupBase;
     }],
     execute: function () {
       var _dec, _dec2, _dec3, _dec4, _dec5, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4;
@@ -19780,8 +19872,8 @@ System.register("chunks:///_virtual/UILeaderboard.ts", ['./rollupPluginModLoBabe
         visible: true
       }), _dec5 = property({
         type: ScrollView
-      }), _dec(_class = (_class2 = /*#__PURE__*/function (_GameUI) {
-        _inheritsLoose(UILeaderboard, _GameUI);
+      }), _dec(_class = (_class2 = /*#__PURE__*/function (_PopupBase) {
+        _inheritsLoose(UILeaderboard, _PopupBase);
 
         function UILeaderboard() {
           var _this;
@@ -19790,7 +19882,7 @@ System.register("chunks:///_virtual/UILeaderboard.ts", ['./rollupPluginModLoBabe
             args[_key] = arguments[_key];
           }
 
-          _this = _GameUI.call.apply(_GameUI, [this].concat(args)) || this;
+          _this = _PopupBase.call.apply(_PopupBase, [this].concat(args)) || this;
 
           _initializerDefineProperty(_this, "_playerCard", _descriptor, _assertThisInitialized(_this));
 
@@ -19806,8 +19898,9 @@ System.register("chunks:///_virtual/UILeaderboard.ts", ['./rollupPluginModLoBabe
         var _proto = UILeaderboard.prototype;
 
         _proto.onShow = function onShow() {
+          _PopupBase.prototype.onShow.call(this);
+
           ButtonUtils.bind(this._btnClose, this.onClosePopup, this);
-          this.uiManager.show(EUIGame.Popup_Loading);
           this.onLoadLeaderboard();
         };
 
@@ -19942,7 +20035,7 @@ System.register("chunks:///_virtual/UILeaderboard.ts", ['./rollupPluginModLoBabe
         };
 
         return UILeaderboard;
-      }(GameUI), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_playerCard", [_dec2], {
+      }(PopupBase), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_playerCard", [_dec2], {
         configurable: true,
         enumerable: true,
         writable: true,
@@ -20049,10 +20142,10 @@ System.register("chunks:///_virtual/UILoading.ts", ['./rollupPluginModLoBabelHel
   };
 });
 
-System.register("chunks:///_virtual/UILoginScreen.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './GameUI.ts', './ButtonUtils.ts', './PlayerPrefs.ts'], function (exports) {
+System.register("chunks:///_virtual/UILoginPopup.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './GameUI.ts', './ButtonUtils.ts', './ToggleUtils.ts', './ServiceLocator.ts', './Define.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, EditBox, Button, GameUI, ButtonUtils, PlayerPrefs;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, EditBox, Toggle, Button, GameUI, ButtonUtils, ToggleUtils, ServiceLocator, Define;
 
   return {
     setters: [function (module) {
@@ -20064,40 +20157,42 @@ System.register("chunks:///_virtual/UILoginScreen.ts", ['./rollupPluginModLoBabe
       cclegacy = module.cclegacy;
       _decorator = module._decorator;
       EditBox = module.EditBox;
+      Toggle = module.Toggle;
       Button = module.Button;
     }, function (module) {
       GameUI = module.GameUI;
     }, function (module) {
       ButtonUtils = module.ButtonUtils;
     }, function (module) {
-      PlayerPrefs = module.PlayerPrefs;
+      ToggleUtils = module.ToggleUtils;
+    }, function (module) {
+      ServiceLocator = module.ServiceLocator;
+    }, function (module) {
+      Define = module.Define;
     }],
     execute: function () {
-      var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5;
+      var _dec, _dec2, _dec3, _dec4, _dec5, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4;
 
-      cclegacy._RF.push({}, "cbfa0W7Y9VIx6BYWPbh1zsj", "UILoginScreen", undefined);
+      cclegacy._RF.push({}, "cbfa0W7Y9VIx6BYWPbh1zsj", "UILoginPopup", undefined);
 
       var ccclass = _decorator.ccclass,
           property = _decorator.property;
-      var UILoginScreen = exports('UILoginScreen', (_dec = ccclass('UILoginScreen'), _dec2 = property({
+      var UILoginPopup = exports('UILoginPopup', (_dec = ccclass('UILoginPopup'), _dec2 = property({
         type: EditBox,
         visible: true
       }), _dec3 = property({
         type: EditBox,
         visible: true
       }), _dec4 = property({
-        type: Button,
+        type: Toggle,
         visible: true
       }), _dec5 = property({
         type: Button,
         visible: true
-      }), _dec6 = property({
-        type: Button,
-        visible: true
       }), _dec(_class = (_class2 = /*#__PURE__*/function (_GameUI) {
-        _inheritsLoose(UILoginScreen, _GameUI);
+        _inheritsLoose(UILoginPopup, _GameUI);
 
-        function UILoginScreen() {
+        function UILoginPopup() {
           var _this;
 
           for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -20110,25 +20205,39 @@ System.register("chunks:///_virtual/UILoginScreen.ts", ['./rollupPluginModLoBabe
 
           _initializerDefineProperty(_this, "_passwordField", _descriptor2, _assertThisInitialized(_this));
 
-          _initializerDefineProperty(_this, "_btnLogin", _descriptor3, _assertThisInitialized(_this));
+          _initializerDefineProperty(_this, "_rememberMeToggle", _descriptor3, _assertThisInitialized(_this));
 
-          _initializerDefineProperty(_this, "_btnLoginPreviousAccount", _descriptor4, _assertThisInitialized(_this));
+          _initializerDefineProperty(_this, "_btnLogin", _descriptor4, _assertThisInitialized(_this));
 
-          _initializerDefineProperty(_this, "_btnGuest", _descriptor5, _assertThisInitialized(_this));
-
+          _this._loginController = null;
           _this._userName = "";
           _this._password = "";
-          _this.USERNAME_KEY = "username";
-          _this.PASSWORD_KEY = "password";
           return _this;
         }
 
-        var _proto = UILoginScreen.prototype;
+        var _proto = UILoginPopup.prototype;
 
         _proto.init = function init() {
+          var _this2 = this;
+
           _GameUI.prototype.init.call(this);
 
+          this._loginController = ServiceLocator.get(Define.Service.LoginController);
+
+          this._loginController.checkAutoLogin(function (isShow) {
+            return _this2.onCheckShowPopup(isShow);
+          });
+        };
+
+        _proto.onCheckShowPopup = function onCheckShowPopup(isShow) {
+          if (isShow) this.show();else this.hide();
+        };
+
+        _proto.onShow = function onShow() {
+          _GameUI.prototype.onShow.call(this);
+
           ButtonUtils.bind(this._btnLogin, this.onClickLogin, this);
+          ToggleUtils.bindToggle(this._rememberMeToggle, this.onToggleLogin, this);
 
           this._userNameField.node.on(EditBox.EventType.TEXT_CHANGED, this.onUsernameChange, this);
 
@@ -20138,23 +20247,25 @@ System.register("chunks:///_virtual/UILoginScreen.ts", ['./rollupPluginModLoBabe
           this._passwordField.string = "";
           this._userName = "";
           this._password = "";
-          ButtonUtils.setInteractable(this._btnLogin, true);
-          ButtonUtils.setInteractable(this._btnLoginPreviousAccount, true);
-          ButtonUtils.setInteractable(this._btnGuest, true);
-          ButtonUtils.bind(this._btnLoginPreviousAccount, this.onLoginPreviousAccount, this);
-          this._btnLoginPreviousAccount.node.active = PlayerPrefs.hasKey(this.USERNAME_KEY) && PlayerPrefs.hasKey(this.PASSWORD_KEY);
-          ButtonUtils.bind(this._btnGuest, this.onClickGuest, this);
+          this.setLoginButton(true);
+          this._rememberMeToggle.isChecked = this._loginController.getRemember();
         };
 
         _proto.onDisable = function onDisable() {
           ButtonUtils.unbind(this._btnLogin, this.onClickLogin, this);
-          ButtonUtils.unbind(this._btnLoginPreviousAccount, this.onLoginPreviousAccount, this);
+          ToggleUtils.unbindToggle(this._rememberMeToggle, this.onToggleLogin, this);
 
           this._userNameField.node.off(EditBox.EventType.TEXT_CHANGED, this.onUsernameChange, this);
 
           this._passwordField.node.off(EditBox.EventType.TEXT_CHANGED, this.onPasswordChange, this);
+        };
 
-          ButtonUtils.unbind(this._btnGuest, this.onClickGuest, this);
+        _proto.setRemember = function setRemember(canRemember) {
+          this._rememberMeToggle.isChecked = canRemember;
+        };
+
+        _proto.setLoginButton = function setLoginButton(canLogin) {
+          ButtonUtils.setInteractable(this._btnLogin, canLogin);
         };
 
         _proto.onUsernameChange = function onUsernameChange(editbox) {
@@ -20165,40 +20276,21 @@ System.register("chunks:///_virtual/UILoginScreen.ts", ['./rollupPluginModLoBabe
           this._password = editbox.string;
         };
 
-        _proto.onClickLogin = function onClickLogin() {
-          var _this2 = this;
+        _proto.onToggleLogin = function onToggleLogin(toggle) {
+          this._loginController.setRemember(toggle.isChecked);
+        };
 
+        _proto.onClickLogin = function onClickLogin() {
           if (this._userName.trim() === "") {
             return;
           }
 
-          ButtonUtils.setInteractable(this._btnLogin, false);
-          ButtonUtils.setInteractable(this._btnLoginPreviousAccount, false);
-          ButtonUtils.setInteractable(this._btnGuest, false);
-          this.gameController.login(this._userName, this._password, function (isSuccess) {
-            if (isSuccess) {
-              PlayerPrefs.setString(_this2.USERNAME_KEY, _this2._userName);
-              PlayerPrefs.setString(_this2.PASSWORD_KEY, _this2._password);
+          this.setLoginButton(false);
 
-              _this2.gameController.checkInTable();
-            } else {
-              ButtonUtils.setInteractable(_this2._btnLogin, true);
-            }
-          });
+          this._loginController.login(this._userName, this._password);
         };
 
-        _proto.onLoginPreviousAccount = function onLoginPreviousAccount() {
-          this._userName = PlayerPrefs.getString(this.USERNAME_KEY);
-          this._password = PlayerPrefs.getString(this.PASSWORD_KEY);
-          this.onClickLogin();
-        };
-
-        _proto.onClickGuest = function onClickGuest() {// if (DEBUG) console.log(`Guest Login : ========= `);
-          // this.gameController.guestLogin();
-          // this.hide();
-        };
-
-        return UILoginScreen;
+        return UILoginPopup;
       }(GameUI), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_userNameField", [_dec2], {
         configurable: true,
         enumerable: true,
@@ -20213,21 +20305,14 @@ System.register("chunks:///_virtual/UILoginScreen.ts", ['./rollupPluginModLoBabe
         initializer: function initializer() {
           return null;
         }
-      }), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, "_btnLogin", [_dec4], {
+      }), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, "_rememberMeToggle", [_dec4], {
         configurable: true,
         enumerable: true,
         writable: true,
         initializer: function initializer() {
           return null;
         }
-      }), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, "_btnLoginPreviousAccount", [_dec5], {
-        configurable: true,
-        enumerable: true,
-        writable: true,
-        initializer: function initializer() {
-          return null;
-        }
-      }), _descriptor5 = _applyDecoratedDescriptor(_class2.prototype, "_btnGuest", [_dec6], {
+      }), _descriptor4 = _applyDecoratedDescriptor(_class2.prototype, "_btnLogin", [_dec5], {
         configurable: true,
         enumerable: true,
         writable: true,
@@ -20512,10 +20597,10 @@ System.register("chunks:///_virtual/UIMainmenu.ts", ['./rollupPluginModLoBabelHe
   };
 });
 
-System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ServiceLocator.ts', './Define.ts', './LogUtils.ts', './BaseUI.ts', './EUICore.ts', './EnumUtils.ts', './ResourcesUtils.ts'], function () {
+System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './EnumUtils.ts', './LogUtils.ts', './ResourcesUtils.ts', './BaseUI.ts', './EUICore.ts'], function () {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, Node, Layers, Widget, instantiate, Component, Prefab, ServiceLocator, Define, LogUtils, BaseUI, EUILayer, EnumUtils, ResourceUtils;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _asyncToGenerator, _regeneratorRuntime, _createForOfIteratorHelperLoose, cclegacy, _decorator, CCString, Node, Layers, Widget, instantiate, Component, Prefab, EnumUtils, LogUtils, ResourceUtils, BaseUI, EUILayer;
 
   return {
     setters: [function (module) {
@@ -20525,9 +20610,11 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
       _assertThisInitialized = module.assertThisInitialized;
       _asyncToGenerator = module.asyncToGenerator;
       _regeneratorRuntime = module.regeneratorRuntime;
+      _createForOfIteratorHelperLoose = module.createForOfIteratorHelperLoose;
     }, function (module) {
       cclegacy = module.cclegacy;
       _decorator = module._decorator;
+      CCString = module.CCString;
       Node = module.Node;
       Layers = module.Layers;
       Widget = module.Widget;
@@ -20535,22 +20622,18 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
       Component = module.Component;
       Prefab = module.Prefab;
     }, function (module) {
-      ServiceLocator = module.ServiceLocator;
-    }, function (module) {
-      Define = module.Define;
+      EnumUtils = module.EnumUtils;
     }, function (module) {
       LogUtils = module.LogUtils;
+    }, function (module) {
+      ResourceUtils = module.ResourceUtils;
     }, function (module) {
       BaseUI = module.BaseUI;
     }, function (module) {
       EUILayer = module.EUILayer;
-    }, function (module) {
-      EnumUtils = module.EnumUtils;
-    }, function (module) {
-      ResourceUtils = module.ResourceUtils;
     }],
     execute: function () {
-      var _dec, _dec2, _dec3, _class, _class2, _descriptor, _descriptor2;
+      var _dec, _dec2, _dec3, _dec4, _class, _class2, _descriptor, _descriptor2, _descriptor3;
 
       cclegacy._RF.push({}, "9fa23fpNsxPt517qTHqi837", "UIManager", undefined);
 
@@ -20559,6 +20642,10 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
       var UIManager = (_dec = ccclass('UIManager'), _dec2 = property({
         visible: true
       }), _dec3 = property({
+        type: [CCString],
+        visible: true
+      }), _dec4 = property({
+        type: [CCString],
         visible: true
       }), _dec(_class = (_class2 = /*#__PURE__*/function (_Component) {
         _inheritsLoose(UIManager, _Component);
@@ -20572,9 +20659,11 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
 
           _this = _Component.call.apply(_Component, [this].concat(args)) || this;
 
-          _initializerDefineProperty(_this, "_uiGeneralPath", _descriptor, _assertThisInitialized(_this));
+          _initializerDefineProperty(_this, "_uiRootPath", _descriptor, _assertThisInitialized(_this));
 
-          _initializerDefineProperty(_this, "_uiPath", _descriptor2, _assertThisInitialized(_this));
+          _initializerDefineProperty(_this, "_uiPreloadPath", _descriptor2, _assertThisInitialized(_this));
+
+          _initializerDefineProperty(_this, "_uiLazyPath", _descriptor3, _assertThisInitialized(_this));
 
           _this._layerMap = new Map();
           _this._uiData = new Map();
@@ -20584,13 +20673,8 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
 
         var _proto = UIManager.prototype;
 
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.UIManager, this);
+        _proto.init = function init() {
           this.setupLayers();
-        };
-
-        _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(Define.Service.UIManager);
         };
 
         _proto.setupLayers = function setupLayers() {
@@ -20619,33 +20703,41 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
           var _loadData = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
             var _this3 = this;
 
-            var _yield$Promise$all, coreUIs, gameUIs;
+            var preLoadUIs, _iterator, _step, path, uis;
 
             return _regeneratorRuntime().wrap(function _callee$(_context) {
               while (1) {
                 switch (_context.prev = _context.next) {
                   case 0:
-                    _context.next = 2;
-                    return Promise.all([ResourceUtils.loadDir(this._uiGeneralPath, Prefab), ResourceUtils.loadDir(this._uiPath, Prefab)]);
+                    preLoadUIs = [];
+                    _iterator = _createForOfIteratorHelperLoose(this._uiPreloadPath);
 
                   case 2:
-                    _yield$Promise$all = _context.sent;
-                    coreUIs = _yield$Promise$all[0];
-                    gameUIs = _yield$Promise$all[1];
+                    if ((_step = _iterator()).done) {
+                      _context.next = 10;
+                      break;
+                    }
 
-                    if (coreUIs) {
-                      coreUIs.forEach(function (ui) {
+                    path = _step.value;
+                    _context.next = 6;
+                    return ResourceUtils.loadDir(this._uiRootPath + "/" + path, Prefab);
+
+                  case 6:
+                    uis = _context.sent;
+                    preLoadUIs.push.apply(preLoadUIs, uis);
+
+                  case 8:
+                    _context.next = 2;
+                    break;
+
+                  case 10:
+                    if (preLoadUIs) {
+                      preLoadUIs.forEach(function (ui) {
                         if (!_this3._uiData.has(ui.name)) _this3._uiData.set(ui.name, ui);
                       });
                     }
 
-                    if (gameUIs) {
-                      gameUIs.forEach(function (ui) {
-                        if (!_this3._uiData.has(ui.name)) _this3._uiData.set(ui.name, ui);
-                      });
-                    }
-
-                  case 7:
+                  case 11:
                   case "end":
                     return _context.stop();
                 }
@@ -20660,14 +20752,13 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
           return loadData;
         }();
 
-        _proto.register = function register(identifier, node) {
+        _proto.register = function register(identifier, ui) {
           if (this._uisMap.has(identifier)) {
             LogUtils.warn(identifier + " is already registered");
             return;
           }
 
-          this._uisMap.set(identifier, node);
-
+          this.setupNode(identifier, ui);
           LogUtils.log(identifier + " is registered");
         };
 
@@ -20688,20 +20779,21 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
 
         _proto.show = function show(identifier) {
           LogUtils.log("Show ui:", identifier);
-          var node = this.tryLoadUI(identifier);
+          var ui = this.tryLoadUI(identifier);
 
-          if (!node) {
-            LogUtils.error("Failed to initialize ui: " + identifier);
+          if (!ui) {
+            LogUtils.error("Ui is not cached, start loading from resources: " + identifier);
             this.showAsync(identifier);
             return null;
           }
 
-          return this.activeUI(node);
+          this.activeUI(ui);
+          return ui;
         };
 
         _proto.showAsync = /*#__PURE__*/function () {
           var _showAsync = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(identifier) {
-            var node;
+            var ui;
             return _regeneratorRuntime().wrap(function _callee2$(_context2) {
               while (1) {
                 switch (_context2.prev = _context2.next) {
@@ -20711,9 +20803,9 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
                     return this.tryLoadUIAsync(identifier);
 
                   case 3:
-                    node = _context2.sent;
+                    ui = _context2.sent;
 
-                    if (node) {
+                    if (ui) {
                       _context2.next = 7;
                       break;
                     }
@@ -20722,9 +20814,10 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
                     return _context2.abrupt("return", null);
 
                   case 7:
-                    return _context2.abrupt("return", this.activeUI(node));
+                    this.activeUI(ui);
+                    return _context2.abrupt("return", ui);
 
-                  case 8:
+                  case 9:
                   case "end":
                     return _context2.stop();
                 }
@@ -20741,9 +20834,7 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
 
         _proto.hide = function hide(identifier) {
           LogUtils.log("Hiding ui:", identifier);
-          var node = this.getUI(identifier);
-          if (!node) return;
-          var ui = node.getComponent(BaseUI);
+          var ui = this.getUI(identifier);
 
           if (ui) {
             ui.hide();
@@ -20752,10 +20843,10 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
         ;
 
         _proto.isUIVisible = function isUIVisible(uiIdentifier) {
-          var node = this.getUI(uiIdentifier);
+          var ui = this.getUI(uiIdentifier);
 
-          if (node) {
-            return node.active;
+          if (ui) {
+            return ui.node.active;
           }
 
           return false;
@@ -20827,12 +20918,15 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
             return null;
           }
 
-          return this.setupNode(identifier, uiPrefab);
+          var newNodeUI = instantiate(uiPrefab);
+          var ui = newNodeUI.getComponent(BaseUI);
+          this.setupNode(identifier, ui);
+          return ui;
         };
 
         _proto.tryLoadUIAsync = /*#__PURE__*/function () {
           var _tryLoadUIAsync = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(identifier) {
-            var node, uiPrefab;
+            var node, uiPrefab, newNodeUI, ui;
             return _regeneratorRuntime().wrap(function _callee4$(_context4) {
               while (1) {
                 switch (_context4.prev = _context4.next) {
@@ -20862,9 +20956,12 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
                     return _context4.abrupt("return", null);
 
                   case 9:
-                    return _context4.abrupt("return", this.setupNode(identifier, uiPrefab));
+                    newNodeUI = instantiate(uiPrefab);
+                    ui = newNodeUI.getComponent(BaseUI);
+                    this.setupNode(identifier, ui);
+                    return _context4.abrupt("return", ui);
 
-                  case 10:
+                  case 13:
                   case "end":
                     return _context4.stop();
                 }
@@ -20879,73 +20976,63 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
           return tryLoadUIAsync;
         }();
 
-        _proto.setupNode = function setupNode(identifier, uiPrefab) {
-          var newNodeUI = instantiate(uiPrefab);
-          var ui = newNodeUI.getComponent(BaseUI);
-
+        _proto.setupNode = function setupNode(identifier, ui) {
           if (ui) {
             var parentLayer = this._layerMap.get(ui.UILayer);
 
-            newNodeUI.parent = parentLayer;
+            ui.node.setParent(parentLayer, false);
           } // Cache it
 
 
-          this._uisMap.set(identifier, newNodeUI);
+          this._uisMap.set(identifier, ui);
 
-          LogUtils.log(identifier + " initialized and cached."); //this.setPriorityuiId();
-
-          return newNodeUI;
+          LogUtils.log(identifier + " initialized and cached.");
         };
 
-        _proto.activeUI = function activeUI(node) {
-          var ui = node.getComponent(BaseUI);
-
+        _proto.activeUI = function activeUI(ui) {
           if (ui) {
-            node.setSiblingIndex(node.parent.children.length - 1); // Bring to top
+            ui.node.setSiblingIndex(ui.node.parent.children.length - 1); // Bring to top
 
             ui.init();
             ui.show();
           }
-
-          return ui;
         };
 
         _proto.tryLoadFromResources = /*#__PURE__*/function () {
           var _tryLoadFromResources = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(identifier) {
-            var searchPaths, _i, _searchPaths, path, fullPath, ui;
+            var _iterator2, _step2, path, fullPath, ui;
 
             return _regeneratorRuntime().wrap(function _callee5$(_context5) {
               while (1) {
                 switch (_context5.prev = _context5.next) {
                   case 0:
-                    searchPaths = [this._uiGeneralPath, this._uiPath];
-                    _i = 0, _searchPaths = searchPaths;
+                    _iterator2 = _createForOfIteratorHelperLoose(this._uiLazyPath);
 
-                  case 2:
-                    if (!(_i < _searchPaths.length)) {
-                      _context5.next = 18;
+                  case 1:
+                    if ((_step2 = _iterator2()).done) {
+                      _context5.next = 16;
                       break;
                     }
 
-                    path = _searchPaths[_i];
+                    path = _step2.value;
 
                     if (path) {
-                      _context5.next = 6;
+                      _context5.next = 5;
                       break;
                     }
 
-                    return _context5.abrupt("continue", 15);
+                    return _context5.abrupt("continue", 14);
 
-                  case 6:
-                    fullPath = path + "/" + identifier;
-                    _context5.next = 9;
+                  case 5:
+                    fullPath = this._uiRootPath + "/" + path + "/" + identifier;
+                    _context5.next = 8;
                     return ResourceUtils.load(fullPath, Prefab);
 
-                  case 9:
+                  case 8:
                     ui = _context5.sent;
 
                     if (!ui) {
-                      _context5.next = 15;
+                      _context5.next = 14;
                       break;
                     }
 
@@ -20958,16 +21045,15 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
                     LogUtils.log("\u2705 Loaded [" + identifier + "] from [" + path + "]");
                     return _context5.abrupt("return", ui);
 
-                  case 15:
-                    _i++;
-                    _context5.next = 2;
+                  case 14:
+                    _context5.next = 1;
                     break;
 
-                  case 18:
-                    LogUtils.warn("\u274C Prefab [" + identifier + "] not found in paths: " + searchPaths.join(", "));
+                  case 16:
+                    LogUtils.warn("\u274C Prefab [" + identifier + "] not found in paths: " + this._uiLazyPath.join(", "));
                     return _context5.abrupt("return", null);
 
-                  case 20:
+                  case 18:
                   case "end":
                     return _context5.stop();
                 }
@@ -20983,19 +21069,26 @@ System.register("chunks:///_virtual/UIManager.ts", ['./rollupPluginModLoBabelHel
         }();
 
         return UIManager;
-      }(Component), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_uiGeneralPath", [_dec2], {
+      }(Component), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_uiRootPath", [_dec2], {
         configurable: true,
         enumerable: true,
         writable: true,
         initializer: function initializer() {
           return "";
         }
-      }), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, "_uiPath", [_dec3], {
+      }), _descriptor2 = _applyDecoratedDescriptor(_class2.prototype, "_uiPreloadPath", [_dec3], {
         configurable: true,
         enumerable: true,
         writable: true,
         initializer: function initializer() {
-          return "";
+          return [];
+        }
+      }), _descriptor3 = _applyDecoratedDescriptor(_class2.prototype, "_uiLazyPath", [_dec4], {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        initializer: function initializer() {
+          return [];
         }
       })), _class2)) || _class);
 
@@ -21613,10 +21706,10 @@ System.register("chunks:///_virtual/UIPopup.ts", ['./rollupPluginModLoBabelHelpe
   };
 });
 
-System.register("chunks:///_virtual/UIRebuyin.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ServiceLocator.ts', './ButtonUtils.ts', './ToggleUtils.ts', './Define.ts', './GameUI.ts', './AudioHelper.ts'], function (exports) {
+System.register("chunks:///_virtual/UIRebuyin.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ServiceLocator.ts', './ButtonUtils.ts', './ToggleUtils.ts', './Define.ts', './GameUI.ts', './AudioHelper.ts', './EUIGame.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, Button, Slider, ProgressBar, Toggle, Label, ServiceLocator, ButtonUtils, ToggleUtils, Define, GameUI, AudioHelper;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, Button, Slider, ProgressBar, Toggle, Label, ServiceLocator, ButtonUtils, ToggleUtils, Define, GameUI, AudioHelper, EUIGame;
 
   return {
     setters: [function (module) {
@@ -21644,6 +21737,8 @@ System.register("chunks:///_virtual/UIRebuyin.ts", ['./rollupPluginModLoBabelHel
       GameUI = module.GameUI;
     }, function (module) {
       AudioHelper = module.AudioHelper;
+    }, function (module) {
+      EUIGame = module.EUIGame;
     }],
     execute: function () {
       var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _dec8, _dec9, _dec10, _dec11, _dec12, _dec13, _dec14, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5, _descriptor6, _descriptor7, _descriptor8, _descriptor9, _descriptor10, _descriptor11, _descriptor12, _descriptor13;
@@ -21750,7 +21845,7 @@ System.register("chunks:///_virtual/UIRebuyin.ts", ['./rollupPluginModLoBabelHel
         _proto.init = function init() {
           _GameUI.prototype.init.call(this);
 
-          this._minigameManager = ServiceLocator.get(Define.Service.MinigameManager);
+          this._minigameManager = this.uiManager.getUI(EUIGame.MinigameUIManager);
           this._userProfile = ServiceLocator.get(Define.Service.UserProfile); //cheat
           // if (CHEAT) {
           //     this.miniGame = this._minigameManager.currentMiniGame.node.getComponent(PokerManager);
@@ -22037,7 +22132,7 @@ System.register("chunks:///_virtual/UIRebuyin.ts", ['./rollupPluginModLoBabelHel
 System.register("chunks:///_virtual/UIReconnect.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ServiceLocator.ts', './Define.ts', './AsyncUtils.ts', './GameUI.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, Label, ServiceLocator, Define, AsyncUtils, GameUI;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, _asyncToGenerator, _regeneratorRuntime, cclegacy, _decorator, Label, isValid, ServiceLocator, Define, AsyncUtils, GameUI;
 
   return {
     setters: [function (module) {
@@ -22051,6 +22146,7 @@ System.register("chunks:///_virtual/UIReconnect.ts", ['./rollupPluginModLoBabelH
       cclegacy = module.cclegacy;
       _decorator = module._decorator;
       Label = module.Label;
+      isValid = module.isValid;
     }, function (module) {
       ServiceLocator = module.ServiceLocator;
     }, function (module) {
@@ -22091,25 +22187,35 @@ System.register("chunks:///_virtual/UIReconnect.ts", ['./rollupPluginModLoBabelH
 
           _this._isEffect = false;
           _this._isShowing = false;
+          _this._lastRemainTime = -1;
           _this._networkController = null;
           return _this;
         }
 
         var _proto = UIReconnect.prototype;
 
-        _proto.onShow = function onShow() {
-          if (!this._networkController) {
-            this._networkController = ServiceLocator.get(Define.Service.NetworkController);
-          }
+        _proto.init = function init() {
+          this._networkController = ServiceLocator.get(Define.Service.NetworkController);
+        };
 
+        _proto.onShow = function onShow() {
           this._isShowing = true;
-          this._isEffect = true;
-          this.onConnectEffect();
+
+          if (!this._isEffect) {
+            this._isEffect = true;
+            this.onConnectEffect();
+          }
         };
 
         _proto.update = function update(dt) {
           if (!this._isShowing) return;
-          this.setNotiTime(this._networkController.ReconnectTimer.getRemainTime());
+          if (!this._isEffect || !this._networkController) return;
+          var remainTime = Math.ceil(this._networkController.ReconnectTimer.getRemainTime());
+
+          if (remainTime !== this._lastRemainTime) {
+            this._lastRemainTime = remainTime;
+            this.setNotiTime(remainTime);
+          }
         };
 
         _proto.setNotiTime = function setNotiTime(remainTime) {
@@ -22123,53 +22229,57 @@ System.register("chunks:///_virtual/UIReconnect.ts", ['./rollupPluginModLoBabelH
 
         _proto.onConnectEffect = /*#__PURE__*/function () {
           var _onConnectEffect = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-            var i;
+            var baseText, i;
             return _regeneratorRuntime().wrap(function _callee$(_context) {
               while (1) {
                 switch (_context.prev = _context.next) {
                   case 0:
-                    if (!(this._isEffect && this.node && this.node.isValid)) {
-                      _context.next = 16;
+                    baseText = "Connecting";
+
+                  case 1:
+                    if (!(this._isEffect && isValid(this.node))) {
+                      _context.next = 17;
                       break;
                     }
 
-                    this._txtConnect.string = "Connecting";
+                    this._txtConnect.string = baseText; // Chạy 3 dấu chấm
+
                     i = 0;
 
-                  case 3:
+                  case 4:
                     if (!(i < 3)) {
-                      _context.next = 12;
+                      _context.next = 13;
                       break;
                     }
 
-                    _context.next = 6;
+                    _context.next = 7;
                     return AsyncUtils.waitForSeconds(0.5);
 
-                  case 6:
-                    if (!(!this._isEffect || !this.node.isValid)) {
-                      _context.next = 8;
+                  case 7:
+                    if (!(!this._isEffect || !isValid(this.node))) {
+                      _context.next = 9;
                       break;
                     }
 
                     return _context.abrupt("return");
 
-                  case 8:
+                  case 9:
                     this._txtConnect.string += ".";
 
-                  case 9:
+                  case 10:
                     i++;
-                    _context.next = 3;
+                    _context.next = 4;
                     break;
 
-                  case 12:
-                    _context.next = 14;
+                  case 13:
+                    _context.next = 15;
                     return AsyncUtils.waitForSeconds(0.5);
 
-                  case 14:
-                    _context.next = 0;
+                  case 15:
+                    _context.next = 1;
                     break;
 
-                  case 16:
+                  case 17:
                   case "end":
                     return _context.stop();
                 }
@@ -22206,10 +22316,10 @@ System.register("chunks:///_virtual/UIReconnect.ts", ['./rollupPluginModLoBabelH
   };
 });
 
-System.register("chunks:///_virtual/UISetting.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './PlayerPrefs.ts', './ToggleUtils.ts', './ButtonUtils.ts', './GameUI.ts', './AudioHelper.ts'], function (exports) {
+System.register("chunks:///_virtual/UISetting.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './PlayerPrefs.ts', './ToggleUtils.ts', './ButtonUtils.ts', './AudioHelper.ts', './PopupBase.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, Button, Toggle, PlayerPrefs, ToggleUtils, ButtonUtils, GameUI, AudioHelper;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, Button, Toggle, PlayerPrefs, ToggleUtils, ButtonUtils, AudioHelper, PopupBase;
 
   return {
     setters: [function (module) {
@@ -22229,9 +22339,9 @@ System.register("chunks:///_virtual/UISetting.ts", ['./rollupPluginModLoBabelHel
     }, function (module) {
       ButtonUtils = module.ButtonUtils;
     }, function (module) {
-      GameUI = module.GameUI;
-    }, function (module) {
       AudioHelper = module.AudioHelper;
+    }, function (module) {
+      PopupBase = module.PopupBase;
     }],
     execute: function () {
       var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _class, _class2, _descriptor, _descriptor2, _descriptor3, _descriptor4, _descriptor5;
@@ -22255,8 +22365,8 @@ System.register("chunks:///_virtual/UISetting.ts", ['./rollupPluginModLoBabelHel
       }), _dec6 = property({
         type: Toggle,
         visible: true
-      }), _dec(_class = (_class2 = /*#__PURE__*/function (_GameUI) {
-        _inheritsLoose(UISetting, _GameUI);
+      }), _dec(_class = (_class2 = /*#__PURE__*/function (_PopupBase) {
+        _inheritsLoose(UISetting, _PopupBase);
 
         function UISetting() {
           var _this;
@@ -22265,7 +22375,7 @@ System.register("chunks:///_virtual/UISetting.ts", ['./rollupPluginModLoBabelHel
             args[_key] = arguments[_key];
           }
 
-          _this = _GameUI.call.apply(_GameUI, [this].concat(args)) || this;
+          _this = _PopupBase.call.apply(_PopupBase, [this].concat(args)) || this;
 
           _initializerDefineProperty(_this, "_btnClose", _descriptor, _assertThisInitialized(_this));
 
@@ -22296,6 +22406,8 @@ System.register("chunks:///_virtual/UISetting.ts", ['./rollupPluginModLoBabelHel
           ToggleUtils.bindToggle(this._musicToggleOn, this.onMusicToggleChanged, this);
           ToggleUtils.bindToggle(this._sfxToggleOn, this.onSFXToggleChanged, this);
           ButtonUtils.bind(this._btnClose, this.onClosePopup, this);
+
+          _PopupBase.prototype.onShow.call(this);
         };
 
         _proto.onHide = function onHide() {
@@ -22339,7 +22451,7 @@ System.register("chunks:///_virtual/UISetting.ts", ['./rollupPluginModLoBabelHel
         };
 
         return UISetting;
-      }(GameUI), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_btnClose", [_dec2], {
+      }(PopupBase), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_btnClose", [_dec2], {
         configurable: true,
         enumerable: true,
         writable: true,
@@ -22757,10 +22869,10 @@ System.register("chunks:///_virtual/UITestNetwork.ts", ['./rollupPluginModLoBabe
   };
 });
 
-System.register("chunks:///_virtual/UITutorial.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ButtonUtils.ts', './GameUI.ts', './AudioHelper.ts'], function (exports) {
+System.register("chunks:///_virtual/UITutorial.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './ButtonUtils.ts', './AudioHelper.ts', './PopupBase.ts'], function (exports) {
   'use strict';
 
-  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, ToggleContainer, Node, Button, ButtonUtils, GameUI, AudioHelper;
+  var _applyDecoratedDescriptor, _inheritsLoose, _initializerDefineProperty, _assertThisInitialized, cclegacy, _decorator, ToggleContainer, Node, Button, ButtonUtils, AudioHelper, PopupBase;
 
   return {
     setters: [function (module) {
@@ -22777,9 +22889,9 @@ System.register("chunks:///_virtual/UITutorial.ts", ['./rollupPluginModLoBabelHe
     }, function (module) {
       ButtonUtils = module.ButtonUtils;
     }, function (module) {
-      GameUI = module.GameUI;
-    }, function (module) {
       AudioHelper = module.AudioHelper;
+    }, function (module) {
+      PopupBase = module.PopupBase;
     }],
     execute: function () {
       var _dec, _dec2, _dec3, _dec4, _class, _class2, _descriptor, _descriptor2, _descriptor3;
@@ -22797,8 +22909,8 @@ System.register("chunks:///_virtual/UITutorial.ts", ['./rollupPluginModLoBabelHe
       }), _dec4 = property({
         type: Button,
         visible: true
-      }), _dec(_class = (_class2 = /*#__PURE__*/function (_GameUI) {
-        _inheritsLoose(UITutorial, _GameUI);
+      }), _dec(_class = (_class2 = /*#__PURE__*/function (_PopupBase) {
+        _inheritsLoose(UITutorial, _PopupBase);
 
         function UITutorial() {
           var _this;
@@ -22807,7 +22919,7 @@ System.register("chunks:///_virtual/UITutorial.ts", ['./rollupPluginModLoBabelHe
             args[_key] = arguments[_key];
           }
 
-          _this = _GameUI.call.apply(_GameUI, [this].concat(args)) || this;
+          _this = _PopupBase.call.apply(_PopupBase, [this].concat(args)) || this;
 
           _initializerDefineProperty(_this, "_toggleContainer", _descriptor, _assertThisInitialized(_this));
 
@@ -22822,6 +22934,8 @@ System.register("chunks:///_virtual/UITutorial.ts", ['./rollupPluginModLoBabelHe
 
         _proto.onShow = function onShow() {
           ButtonUtils.bind(this._btnClose, this.onClosePopup, this);
+
+          _PopupBase.prototype.onShow.call(this);
         };
 
         _proto.onHide = function onHide() {
@@ -22858,7 +22972,7 @@ System.register("chunks:///_virtual/UITutorial.ts", ['./rollupPluginModLoBabelHe
         };
 
         return UITutorial;
-      }(GameUI), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_toggleContainer", [_dec2], {
+      }(PopupBase), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, "_toggleContainer", [_dec2], {
         configurable: true,
         enumerable: true,
         writable: true,
@@ -24599,10 +24713,10 @@ System.register("chunks:///_virtual/UserOptionsPanel.ts", ['./rollupPluginModLoB
   };
 });
 
-System.register("chunks:///_virtual/UserProfile.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './UserData.ts', './Define.ts', './ServiceLocator.ts'], function () {
+System.register("chunks:///_virtual/UserProfile.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './UserData.ts'], function () {
   'use strict';
 
-  var _inheritsLoose, _createClass, cclegacy, _decorator, Component, UserDataBuilder, Define, ServiceLocator;
+  var _inheritsLoose, _createClass, cclegacy, _decorator, Component, UserDataBuilder;
 
   return {
     setters: [function (module) {
@@ -24614,10 +24728,6 @@ System.register("chunks:///_virtual/UserProfile.ts", ['./rollupPluginModLoBabelH
       Component = module.Component;
     }, function (module) {
       UserDataBuilder = module.UserDataBuilder;
-    }, function (module) {
-      Define = module.Define;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
     }],
     execute: function () {
       var _dec, _class;
@@ -24643,14 +24753,6 @@ System.register("chunks:///_virtual/UserProfile.ts", ['./rollupPluginModLoBabelH
         }
 
         var _proto = UserProfile.prototype;
-
-        _proto.onLoad = function onLoad() {
-          ServiceLocator.register(Define.Service.UserProfile, this);
-        };
-
-        _proto.onDestroy = function onDestroy() {
-          ServiceLocator.unregister(Define.Service.UserProfile);
-        };
 
         _proto.init = function init() {
           this._builder = new UserDataBuilder();
@@ -25112,10 +25214,10 @@ System.register("chunks:///_virtual/WaitForSecondsBehaviour.ts", ['./rollupPlugi
   };
 });
 
-System.register("chunks:///_virtual/WinPotBehaviour.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseBehaviour.ts', './BetManager.ts', './UserManager.ts', './ServiceLocator.ts', './PokerTableUI.ts', './AsyncUtils.ts', './UserInforUI.ts'], function (exports) {
+System.register("chunks:///_virtual/WinPotBehaviour.ts", ['./rollupPluginModLoBabelHelpers.js', 'cc', './BaseBehaviour.ts', './BetManager.ts', './UserManager.ts', './PokerTableUI.ts', './AsyncUtils.ts', './UserInforUI.ts'], function (exports) {
   'use strict';
 
-  var _inheritsLoose, _asyncToGenerator, _regeneratorRuntime, _createForOfIteratorHelperLoose, cclegacy, _decorator, BaseBehaviour, BetManager, UserManager, ServiceLocator, PokerTableUI, AsyncUtils, UserInforUI;
+  var _inheritsLoose, _asyncToGenerator, _regeneratorRuntime, _createForOfIteratorHelperLoose, cclegacy, _decorator, BaseBehaviour, BetManager, UserManager, PokerTableUI, AsyncUtils, UserInforUI;
 
   return {
     setters: [function (module) {
@@ -25132,8 +25234,6 @@ System.register("chunks:///_virtual/WinPotBehaviour.ts", ['./rollupPluginModLoBa
       BetManager = module.BetManager;
     }, function (module) {
       UserManager = module.UserManager;
-    }, function (module) {
-      ServiceLocator = module.ServiceLocator;
     }, function (module) {
       PokerTableUI = module.PokerTableUI;
     }, function (module) {
@@ -25180,8 +25280,8 @@ System.register("chunks:///_virtual/WinPotBehaviour.ts", ['./rollupPluginModLoBa
                     betManager = this.gameplayManager.getMiniManager(BetManager);
                     this._userInforUI = this.gameplayManager.getUI().get(UserInforUI);
                     this._tableUI = this.gameplayManager.getUI().get(PokerTableUI);
-                    winners = betManager.winPot();
-                    ServiceLocator.register('winnerResult', winners);
+                    winners = betManager.winPot(); //ServiceLocator.register('winnerResult', winners);
+
                     allWinners = new Set();
 
                     for (_iterator = _createForOfIteratorHelperLoose(winners); !(_step = _iterator()).done;) {
@@ -25198,24 +25298,24 @@ System.register("chunks:///_virtual/WinPotBehaviour.ts", ['./rollupPluginModLoBa
                     });
                     _iterator2 = _createForOfIteratorHelperLoose(winners);
 
-                  case 10:
+                  case 9:
                     if ((_step2 = _iterator2()).done) {
-                      _context.next = 36;
+                      _context.next = 35;
                       break;
                     }
 
                     _pot = _step2.value;
 
                     if (!(_pot.Winners.size > 1)) {
-                      _context.next = 25;
+                      _context.next = 24;
                       break;
                     }
 
                     _iterator4 = _createForOfIteratorHelperLoose(_pot.Winners);
 
-                  case 15:
+                  case 14:
                     if ((_step4 = _iterator4()).done) {
-                      _context.next = 23;
+                      _context.next = 22;
                       break;
                     }
 
@@ -25224,23 +25324,23 @@ System.register("chunks:///_virtual/WinPotBehaviour.ts", ['./rollupPluginModLoBa
                     _winner[0].getWinBet(_pot.PotAmount);
 
                     this.onSetEffect(_winner[0], _winner[1], losers);
-                    _context.next = 21;
+                    _context.next = 20;
                     return this.onPlayAnim(_winner[0], false);
 
-                  case 21:
-                    _context.next = 15;
+                  case 20:
+                    _context.next = 14;
                     break;
 
-                  case 23:
-                    _context.next = 34;
+                  case 22:
+                    _context.next = 33;
                     break;
 
-                  case 25:
+                  case 24:
                     _iterator5 = _createForOfIteratorHelperLoose(_pot.Winners);
 
-                  case 26:
+                  case 25:
                     if ((_step5 = _iterator5()).done) {
-                      _context.next = 34;
+                      _context.next = 33;
                       break;
                     }
 
@@ -25249,22 +25349,22 @@ System.register("chunks:///_virtual/WinPotBehaviour.ts", ['./rollupPluginModLoBa
                     _winner2[0].getWinBet(_pot.PotAmount);
 
                     this.onSetEffect(_winner2[0], _winner2[1], losers);
-                    _context.next = 32;
+                    _context.next = 31;
                     return this.onPlayAnim(_winner2[0], true);
 
-                  case 32:
-                    _context.next = 26;
+                  case 31:
+                    _context.next = 25;
                     break;
 
-                  case 34:
-                    _context.next = 10;
+                  case 33:
+                    _context.next = 9;
                     break;
 
-                  case 36:
+                  case 35:
                     //await AsyncUtils.waitForSeconds(2.5);
                     this.endBehaviour();
 
-                  case 37:
+                  case 36:
                   case "end":
                     return _context.stop();
                 }

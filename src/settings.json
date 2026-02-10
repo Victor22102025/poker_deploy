@@ -23,9 +23,9 @@
             "d930590d-bb92-4cc8-8bd1-23cd027f9edf",
             "a3cd009f-0ab0-420d-9278-b9fdab939bbc",
             "9361fd90-ba52-4f84-aa93-6e878fd576ca",
+            "871c3b6c-7379-419d-bda3-794b239ab90d",
             "c27215d8-6835-4b68-bfbb-bdeac6100c04",
-            "b5d6115f-0370-4d7c-aad3-c194cc71cf98",
-            "871c3b6c-7379-419d-bda3-794b239ab90d"
+            "b5d6115f-0370-4d7c-aad3-c194cc71cf98"
         ]
     },
     "animation": {
@@ -60,14 +60,14 @@
         ]
     },
     "launch": {
-        "launchScene": "db://assets/Scenes/Splash.scene"
+        "launchScene": "db://assets/Scenes/Loading.scene"
     },
     "screen": {
         "exactFitScreen": true,
         "designResolution": {
             "width": 1280,
             "height": 720,
-            "policy": 2
+            "policy": 4
         },
         "orientation": "landscape"
     },
