@@ -18190,7 +18190,7 @@ System.register("chunks:///_virtual/UIBackScreen.ts", ['./rollupPluginModLoBabel
         _proto.onStartGame = function onStartGame() {
           var network = ServiceLocator.get(Define.Service.NetworkManager);
           var sessionManager = ServiceLocator.get(Define.Service.SessionManager);
-          var roomPluginMessage = [5, "SicboZone", sessionManager.CurrentRoom.roomId, {
+          var roomPluginMessage = [5, "POKER", sessionManager.CurrentRoom.roomId, {
             "action": "user_start_game",
             "payload": {}
           }];

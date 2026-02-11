@@ -139,24 +139,12 @@
             "Audios/BGMs/BGM_Lobby",
             "cc.AudioClip"
         ],
-        "87ff1875-6331-46a3-ab91-f9c73ecd50a1": [
-            "Audios/SFXs/SFX_CardFlip",
-            "cc.AudioClip"
-        ],
-        "42c82666-dc93-43e8-874d-631dbce1d190": [
-            "Audios/SFXs/SFX_Chip",
-            "cc.AudioClip"
-        ],
         "913204c4-45ef-4ddd-8611-3731fb768f88": [
             "Audios/SFXs/SFX_Click",
             "cc.AudioClip"
         ],
         "00043577-0003-44b7-93e9-238f9a2b2418": [
             "Audios/SFXs/SFX_DealCard",
-            "cc.AudioClip"
-        ],
-        "76e030da-9a23-4b49-a4c9-92efaf34c011": [
-            "Audios/SFXs/SFX_DealCard_2",
             "cc.AudioClip"
         ],
         "84688c2f-ac0e-43db-8e7c-6de29de9e2bc": [
@@ -194,6 +182,18 @@
         "ce245deb-951e-4a2c-b906-c3d3f64bbc87": [
             "UI/Popups/Popup_UserProfile",
             "cc.Prefab"
+        ],
+        "87ff1875-6331-46a3-ab91-f9c73ecd50a1": [
+            "Audios/SFXs/SFX_CardFlip",
+            "cc.AudioClip"
+        ],
+        "42c82666-dc93-43e8-874d-631dbce1d190": [
+            "Audios/SFXs/SFX_Chip",
+            "cc.AudioClip"
+        ],
+        "76e030da-9a23-4b49-a4c9-92efaf34c011": [
+            "Audios/SFXs/SFX_DealCard_2",
+            "cc.AudioClip"
         ]
     },
     "scenes": {},
